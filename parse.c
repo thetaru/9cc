@@ -24,7 +24,7 @@ Node *new_node_num(int val) {
 void program() {
 	int i = 0;
 	while(!at_eof()) {
-    	code[i++] = stmt();
+		code[i++] = stmt();
 	}
 	code[i] = NULL;
 }
@@ -39,7 +39,7 @@ Node *assign() {
 
 // expr = equality
 Node *expr() {
-    return assign();
+	return assign();
 }
 
 // stmt = expr ";"
@@ -53,84 +53,84 @@ Node *stmt() {
 Node *equality() {
 	Node *node = relational();
 
-    for (;;) {
-        if (consume("=="))
-            node = new_binary(ND_EQ, node, relational());
-        else if (consume("!="))
-            node = new_binary(ND_NE, node, relational());
-        else
-            return node;
-    }
+	for (;;) {
+		if (consume("=="))
+			node = new_binary(ND_EQ, node, relational());
+		else if (consume("!="))
+			node = new_binary(ND_NE, node, relational());
+		else
+			return node;
+	}
 }
 
 // relational = add ("<" add | "<=" add | ">" add | ">=" add)*
 Node *relational() {
-    Node *node = add();
+	Node *node = add();
 
-    for (;;) {
-        if (consume("<"))
-            node = new_binary(ND_LT, node, add());
-        else if (consume("<="))
-            node = new_binary(ND_LE, node, add());
+	for (;;) {
+		if (consume("<"))
+			node = new_binary(ND_LT, node, add());
+		else if (consume("<="))
+			node = new_binary(ND_LE, node, add());
         // ">",">="はそれぞれ"<","<="のLHS, RHS部を反転させて実装
-        else if (consume(">"))
-            node = new_binary(ND_LT, add(), node);
-        else if (consume(">="))
-            node = new_binary(ND_LE, add(), node);
-        else
-            return node;
-    }
+		else if (consume(">"))
+			node = new_binary(ND_LT, add(), node);
+		else if (consume(">="))
+			node = new_binary(ND_LE, add(), node);
+		else
+			return node;
+	}
 }
 
 // add = mul ("+" mul | "-" mul)*
 Node *add() {
-    Node *node = mul();
+	Node *node = mul();
 
-    for (;;) {
-        if (consume("+"))
-            node = new_binary(ND_ADD, node, mul());
-        else if (consume("-"))
-            node = new_binary(ND_SUB, node, mul());
-        else
-            return node;
-    }
+	for (;;) {
+		if (consume("+"))
+			node = new_binary(ND_ADD, node, mul());
+		else if (consume("-"))
+			node = new_binary(ND_SUB, node, mul());
+		else
+			return node;
+	}
 }
 
 // mul = unary ("*" unary | "/" unary)*
 Node *mul() {
-    Node *node = unary();
+	Node *node = unary();
 
-    for (;;) {
-        if (consume("*"))
-            node = new_binary(ND_MUL, node, unary());
-        else if (consume("/"))
-            node = new_binary(ND_DIV, node, unary());
-        else
-            return node;
-    }
+	for (;;) {
+		if (consume("*"))
+			node = new_binary(ND_MUL, node, unary());
+		else if (consume("/"))
+			node = new_binary(ND_DIV, node, unary());
+		else
+			return node;
+	}
 }
 
 // unary = ("+" | "-")? primary | primary
 Node *unary() {
-    if (consume("+"))
-        // +x
-        // -> x
-        return primary();
-    if (consume("-"))
-        // -x
-        // -> 0-x
-        return new_binary(ND_SUB, new_node_num(0), unary());
-    return primary();
+	if (consume("+"))
+		// +x
+		// -> x
+		return primary();
+	if (consume("-"))
+		// -x
+		// -> 0-x
+		return new_binary(ND_SUB, new_node_num(0), unary());
+	return primary();
 }
 
 // primary = num | ident | "(" expr ")"
 Node *primary() {
-    // 次のトークンが"("なら、"(" expr ")"のはず
-    if (consume("(")) {
-        Node *node = expr();
-        expect(")");
-        return node;
-    }
+	// 次のトークンが"("なら、"(" expr ")"のはず
+	if (consume("(")) {
+		Node *node = expr();
+		expect(")");
+		return node;
+	}
 
 	Token *tok = consume_ident();
 	if (tok) {
@@ -140,7 +140,7 @@ Node *primary() {
 		return node;
 	}
 
-    // そうでなければ数値のはず
-    return new_node_num(expect_number());
+	// そうでなければ数値のはず
+	return new_node_num(expect_number());
 }
 
