@@ -40,6 +40,15 @@ bool consume(char *op) {
     return true;
 }
 
+// 次のトークンが期待している識別子のときには、現在のトークンを返してからトークンを1つ読み進める。
+Token *consume_ident() {
+	if (token->kind != TK_IDENT)
+		return NULL;
+	Token *tok = token;
+	token = token->next;
+	return tok;
+}
+
 // 次のトークンが期待している記号のときには、トークンを1つ読み進める。
 // それ以外の場合にはエラーを報告する。
 void expect(char *op) {
@@ -93,18 +102,25 @@ Token *tokenize() {
             continue;
         }
 
-        //
-        if (startswith(p, "==") || startswith(p, "!=") ||
-            startswith(p, "<=") || startswith(p, ">=")) {
+        if (startswith(p, "==") ||
+			startswith(p, "!=") ||
+            startswith(p, "<=") ||
+			startswith(p, ">=")) {
+
             cur = new_token(TK_RESERVED, cur, p, 2);
             p += 2; // 2文字分アドレスを進める
             continue;
         }
 
-        if (strchr("+-*/()<>", *p)) {
+        if (strchr("+-*/()<>=;", *p)) {
             cur = new_token(TK_RESERVED, cur, p++, 1);
             continue;
         }
+
+		if ('a' <= *p && *p <= 'z') {
+			cur = new_token(TK_IDENT, cur, p++, 1);
+			continue;
+		}
 
         if (isdigit(*p)) {
             cur = new_token(TK_NUM, cur, p, 0);
