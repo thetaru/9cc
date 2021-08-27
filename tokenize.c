@@ -104,7 +104,8 @@ Token *tokenize() {
 			continue;
 		}
 
-		if (startswith(p, "==") ||
+		if (
+			startswith(p, "==") ||
 			startswith(p, "!=") ||
 			startswith(p, "<=") ||
 			startswith(p, ">=")) {
