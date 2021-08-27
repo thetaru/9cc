@@ -72,7 +72,7 @@ Node *relational() {
 			node = new_binary(ND_LT, node, add());
 		else if (consume("<="))
 			node = new_binary(ND_LE, node, add());
-        // ">",">="はそれぞれ"<","<="のLHS, RHS部を反転させて実装
+		// ">",">="はそれぞれ"<","<="のLHS, RHS部を反転させて実装
 		else if (consume(">"))
 			node = new_binary(ND_LT, add(), node);
 		else if (consume(">="))
@@ -136,7 +136,23 @@ Node *primary() {
 	if (tok) {
 		Node *node = calloc(1, sizeof(Node));
 		node->kind = ND_LVAR;
-		node->offset = (tok->str[0] - 'a' + 1) * 8;
+
+		LVar *lvar = find_lvar(tok);
+		if (lvar) {
+			node->offset = lvar->offset;
+		} else {
+			lvar = calloc(1, sizeof(LVar));
+			lvar->next = locals;
+			lvar->name = tok->str;
+			lvar->len = tok->len;
+			if (locals == NULL) {
+				lvar->offset = 8;
+			} else {
+				lvar->offset += locals->offset + 8;
+			}
+			node->offset = lvar->offset;
+			locals = lvar;
+		}
 		return node;
 	}
 

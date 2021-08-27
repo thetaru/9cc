@@ -4,6 +4,8 @@
 char *user_input;
 // 現在着目しているトークン
 Token *token;
+// ローカル変数
+LVar *locals;
 
 // エラーを報告するための関数
 // printfと同じ引数を取る
@@ -104,7 +106,7 @@ Token *tokenize() {
 
 		if (startswith(p, "==") ||
 			startswith(p, "!=") ||
-            startswith(p, "<=") ||
+			startswith(p, "<=") ||
 			startswith(p, ">=")) {
 
 			cur = new_token(TK_RESERVED, cur, p, 2);
@@ -118,7 +120,10 @@ Token *tokenize() {
 		}
 
 		if ('a' <= *p && *p <= 'z') {
-			cur = new_token(TK_IDENT, cur, p++, 1);
+			char *q = p++;
+			while ('a' <= *p && *p <= 'z')
+				p++;
+			cur = new_token(TK_IDENT, cur, q, p - q);
 			continue;
 		}
 
@@ -135,4 +140,11 @@ Token *tokenize() {
 
 	new_token(TK_EOF, cur, p, 0);
 	return head.next;
+}
+
+LVar *find_lvar(Token *tok) {
+	for (LVar *var = locals; var; var = var->next)
+		if (var->len == tok->len && !memcmp(tok->str, var->name, var->len))
+			return var;
+	return NULL;
 }
