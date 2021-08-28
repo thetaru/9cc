@@ -1,4 +1,5 @@
 #include "9cc.h"
+#include <stdio.h>
 
 Node *code[100];
 
@@ -42,9 +43,21 @@ Node *expr() {
 	return assign();
 }
 
-// stmt = expr ";"
+// stmt = expr ";" | "return" expr ";"
 Node *stmt() {
-	Node *node = expr();
+	Node *node;
+
+	Token *tok = consume_return();
+	if (tok) {
+		// returnトークンの場合
+		node = calloc(1, sizeof(Node));
+		node->kind = ND_RETURN;
+		node->lhs = expr();
+	} else {
+		// returnトークンでない場合
+		node = expr();
+	}
+
 	expect(";");
 	return node;
 }
