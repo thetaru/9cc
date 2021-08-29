@@ -55,4 +55,11 @@ assert 14 "a = 3; b = 5 * 6 - 8; return a + b / 2;"
 assert 5 "return 5;"
 assert 8 "return 8;"
 
+# IF
+assert 1 "a = 1; if (a == 1) return a;"
+
+# IF-ELSE
+assert 0 "a = 1; if (a == 1) return 0; else return 1;"
+assert 1 "a = 1; if (a != 1) return 0; else return 1;"
+
 echo OK

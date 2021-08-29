@@ -42,18 +42,10 @@ bool consume(char *op) {
 	return true;
 }
 
-// 次のトークンが期待している識別子のときには、現在のトークンを返してからトークンを1つ読み進める。
-Token *consume_ident() {
-	if (token->kind != TK_IDENT)
-		return NULL;
-	Token *tok = token;
-	token = token->next;
-	return tok;
-}
-
-// 
-Token *consume_return() {
-	if (token->kind != TK_RETURN)
+// 次のトークンが期待しているトークン型であるときには、現在のトークンを返してからトークンを1つ読み進める。
+// それ以外の場合はNULLを返す。
+Token *consume_tokenkind(TokenKind kind) {
+	if (token->kind != kind)
 		return NULL;
 	Token *tok = token;
 	token = token->next;
@@ -84,7 +76,7 @@ bool at_eof() {
 	return token->kind == TK_EOF;
 }
 
-// アルファベット(a~z, A~Z))またはアンダーバー(_)であることを確認する
+// アルファベット(a~z, A~Z)またはアンダーバー(_)であることを確認する
 bool is_alpha(char c) {
 	return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || c == '_';
 }
@@ -143,6 +135,18 @@ Token *tokenize() {
 		if (startswith(p, "return") && !is_alnum(p[6])) {
 			cur = new_token(TK_RETURN, cur, p, 6);
 			p += 6; // 6文字分アドレスを進める
+			continue;
+		}
+
+		if (startswith(p, "if") && !is_alnum(p[2])) {
+			cur = new_token(TK_IF, cur, p, 2);
+			p += 2; // 2文字分アドレスを進める
+			continue;
+		}
+
+		if (startswith(p, "else") && !is_alnum(p[4])) {
+			cur = new_token(TK_ELSE, cur, p, 4);
+			p += 4;
 			continue;
 		}
 

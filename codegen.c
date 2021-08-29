@@ -1,5 +1,8 @@
 #include "9cc.h"
 
+// ラベルの通し番号
+int labelseq = 1;
+
 void gen_lval(Node *node) {
 	if (node->kind != ND_LVAR)
 		error("代入の左辺値が変数ではありません");
@@ -23,12 +26,38 @@ void gen(Node *node) {
 	case ND_ASSIGN:
 		gen_lval(node->lhs);
 		gen(node->rhs);
-
 		printf("  pop rdi\n");
 		printf("  pop rax\n");
 		printf("  mov [rax], rdi\n");
 		printf("  push rdi\n");
 		return;
+	case ND_IF: {
+		/*
+		 *                if
+		 * if (A) B <=> A    B
+		 *
+		 */
+		int seq = labelseq++;
+		if (node->els) {
+			gen(node->lhs);
+			printf("  pop rax\n");
+			printf("  cmp rax, 0\n");
+			printf("  je  .Lelse%d\n", seq);
+			gen(node->rhs);
+			printf("  jmp .Lend%d\n", seq);
+			printf(".Lelse%d:\n", seq);
+			gen(node->els);
+			printf(".Lend%d:\n", seq);
+		} else {
+			gen(node->lhs);
+			printf("  pop rax\n");
+			printf("  cmp rax, 0\n");
+			printf("  je  .Lend%d\n", seq);
+			gen(node->rhs);
+			printf(".Lend%d:\n", seq);
+		}
+		return;
+	}
 	case ND_RETURN:
 		gen(node->lhs);
 		printf("  pop rax\n");

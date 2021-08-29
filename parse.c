@@ -43,12 +43,28 @@ Node *expr() {
 	return assign();
 }
 
-// stmt = expr ";" | "return" expr ";"
+// stmt = expr ";" |
+//      | "if" "(" expr ")" stmt ("else" stmt)?
+//      | "while" "(" expr ")" stmt
+//      | "for" "(" expr ")" stmt
+//      | "return" expr ";"
 Node *stmt() {
 	Node *node;
 
-	Token *tok = consume_return();
-	if (tok) {
+	if (consume_tokenkind(TK_IF)) {
+		// "("と")"の確認をしないといけないためnew_binaryは使用不可
+		expect("(");
+		node = calloc(1, sizeof(Node));
+		node->kind = ND_IF;
+		node->lhs = expr();
+		expect(")");
+		node->rhs = stmt();
+		if (consume_tokenkind(TK_ELSE))
+			node->els = stmt();
+		return node;
+	}
+
+	if (consume_tokenkind(TK_RETURN)) {
 		// returnトークンの場合
 		node = calloc(1, sizeof(Node));
 		node->kind = ND_RETURN;
@@ -145,7 +161,7 @@ Node *primary() {
 		return node;
 	}
 
-	Token *tok = consume_ident();
+	Token *tok = consume_tokenkind(TK_IDENT);
 	if (tok) {
 		Node *node = calloc(1, sizeof(Node));
 		node->kind = ND_LVAR;
