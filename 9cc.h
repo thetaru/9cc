@@ -75,7 +75,8 @@ typedef enum {
 	ND_LVAR,   // ローカル変数
 	ND_RETURN, // return
 	ND_IF,     // if
-	ND_WHILE   // while
+	ND_WHILE,  // while
+	ND_FOR     // for
 } NodeKind;
 
 typedef struct Node Node;
@@ -86,6 +87,14 @@ struct Node {
 	Node *rhs;     // 右辺
 
 	Node *els;     // kindがND_IFの場合のみ使う
+
+	/*
+	 * for (init; cond; inc) then
+	 */
+	Node *init;    // 初期化式
+	Node *cond;    // 条件式
+	Node *inc;     // 変化式
+	Node *then;    // 処理内容
 
 	int val;       // kindがND_NUMの場合のみ使う
 	int offset;    // kindがND_LVARの場合のみ使う

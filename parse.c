@@ -46,7 +46,7 @@ Node *expr() {
 // stmt = expr ";" |
 //      | "if" "(" expr ")" stmt ("else" stmt)?
 //      | "while" "(" expr ")" stmt
-//      | "for" "(" expr ")" stmt
+//      | "for" "(" expr? ";" expr? ";" expr? ")" stmt
 //      | "return" expr ";"
 Node *stmt() {
 	Node *node;
@@ -71,6 +71,20 @@ Node *stmt() {
 		node->lhs = expr();
 		expect(")");
 		node->rhs = stmt();
+		return node;
+	}
+
+	if (consume("for")) {
+		expect("(");
+		node = calloc(1, sizeof(Node));
+		node->kind = ND_FOR;
+		node->init = expr();
+		expect(";");
+		node->cond = expr();
+		expect(";");
+		node->inc = expr();
+		expect(")");
+		node->then = stmt();
 		return node;
 	}
 

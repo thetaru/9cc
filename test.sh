@@ -65,4 +65,7 @@ assert 1 "a = 1; if (a != 1) return 0; else return 1;"
 # WHILE
 assert 10 "i = 1; while (i < 10) i = i + 1; return i;"
 
+# FOR
+assert 55 "sum = 0; for (i = 1; i <= 10; i = i + 1) sum = sum + i; return sum;"
+
 echo OK
