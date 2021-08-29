@@ -38,14 +38,6 @@ struct LVar {
 	int offset; // RBPからのオフセット
 };
 
-typedef struct Reserved Reserved;
-
-// 予約語とトークンの型の対応
-struct Reserved {
-	char *kw;       // 予約語
-	TokenKind kind; // トークンの型
-};
-
 void error(char *fmt, ...);
 void error_at(char *loc, char *fmt, ...);
 bool consume(char *op);
