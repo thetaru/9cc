@@ -62,4 +62,7 @@ assert 1 "a = 1; if (a == 1) return a;"
 assert 0 "a = 1; if (a == 1) return 0; else return 1;"
 assert 1 "a = 1; if (a != 1) return 0; else return 1;"
 
+# WHILE
+assert 10 "i = 1; while (i < 10) i = i + 1; return i;"
+
 echo OK

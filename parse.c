@@ -64,6 +64,16 @@ Node *stmt() {
 		return node;
 	}
 
+	if (consume("while")) {
+		expect("(");
+		node = calloc(1, sizeof(Node));
+		node->kind = ND_WHILE;
+		node->lhs = expr();
+		expect(")");
+		node->rhs = stmt();
+		return node;
+	}
+
 	if (consume("return")) {
 		// returnトークンの場合
 		node = calloc(1, sizeof(Node));
