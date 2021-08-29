@@ -38,7 +38,7 @@ void gen(Node *node) {
 		 *
 		 */
 		int seq = labelseq++;
-		if (node->els) {
+		if (node->els) { // if-else文
 			gen(node->lhs);
 			printf("  pop rax\n");
 			printf("  cmp rax, 0\n");
@@ -48,7 +48,7 @@ void gen(Node *node) {
 			printf(".Lelse%d:\n", seq);
 			gen(node->els);
 			printf(".Lend%d:\n", seq);
-		} else {
+		} else { // if文
 			gen(node->lhs);
 			printf("  pop rax\n");
 			printf("  cmp rax, 0\n");

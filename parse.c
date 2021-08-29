@@ -51,7 +51,7 @@ Node *expr() {
 Node *stmt() {
 	Node *node;
 
-	if (consume_tokenkind(TK_IF)) {
+	if (consume("if")) {
 		// "("と")"の確認をしないといけないためnew_binaryは使用不可
 		expect("(");
 		node = calloc(1, sizeof(Node));
@@ -59,12 +59,12 @@ Node *stmt() {
 		node->lhs = expr();
 		expect(")");
 		node->rhs = stmt();
-		if (consume_tokenkind(TK_ELSE))
+		if (consume("else"))
 			node->els = stmt();
 		return node;
 	}
 
-	if (consume_tokenkind(TK_RETURN)) {
+	if (consume("return")) {
 		// returnトークンの場合
 		node = calloc(1, sizeof(Node));
 		node->kind = ND_RETURN;

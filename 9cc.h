@@ -14,16 +14,13 @@ typedef enum {
 	TK_RESERVED, // 記号
 	TK_IDENT,    // 識別子
 	TK_NUM,      // 整数トークン
-	TK_RETURN,   // return
-	TK_IF,       // if
-	TK_ELSE,     // else
 	TK_EOF,      // 入力の終わりを表すトークン
 } TokenKind;
 
 typedef struct Token Token;
 
 // トークン型
-struct Token{
+struct Token {
 	TokenKind kind; // トークンの型
 	Token *next;    // 次の入力トークン
 	int val;        // kindがTK_NUMの場合、その数値
@@ -41,6 +38,14 @@ struct LVar {
 	int offset; // RBPからのオフセット
 };
 
+typedef struct Reserved Reserved;
+
+// 予約語とトークンの型の対応
+struct Reserved {
+	char *kw;       // 予約語
+	TokenKind kind; // トークンの型
+};
+
 void error(char *fmt, ...);
 void error_at(char *loc, char *fmt, ...);
 bool consume(char *op);
@@ -50,6 +55,7 @@ int expect_number();
 bool at_eof();
 bool is_alpha(char c);
 int is_alnum(char c);
+char *fetch_reserved(char *p);
 Token *new_token(TokenKind kind, Token *cur, char *str, int len);
 bool startswith(char *p, char *q);
 Token *tokenize();
@@ -76,7 +82,8 @@ typedef enum {
 	ND_NUM,    // Integer
 	ND_LVAR,   // ローカル変数
 	ND_RETURN, // return
-	ND_IF      // if
+	ND_IF,     // if
+	ND_WHILE   // while
 } NodeKind;
 
 typedef struct Node Node;

@@ -86,6 +86,18 @@ int is_alnum(char c) {
 	return is_alpha(c) || ('0' <= c && c <= '9');
 }
 
+// 予約語を取得する
+char *fetch_reserved(char *p) {
+	static char *keywords[] = {"return", "if", "else", "while"};
+	for (int i = 0; i < sizeof(keywords) / sizeof(*keywords); i++) {
+		char *kw = keywords[i];
+		int len = strlen(kw);
+		if (startswith(p, kw) && !is_alnum(p[len])) {
+			return kw;
+		}
+	}
+	return NULL;
+}
 
 // 新しいトークンを作成してcurに繋げる
 Token *new_token(TokenKind kind, Token *cur, char *str, int len) {
@@ -132,21 +144,11 @@ Token *tokenize() {
 			continue;
 		}
 
-		if (startswith(p, "return") && !is_alnum(p[6])) {
-			cur = new_token(TK_RETURN, cur, p, 6);
-			p += 6; // 6文字分アドレスを進める
-			continue;
-		}
-
-		if (startswith(p, "if") && !is_alnum(p[2])) {
-			cur = new_token(TK_IF, cur, p, 2);
-			p += 2; // 2文字分アドレスを進める
-			continue;
-		}
-
-		if (startswith(p, "else") && !is_alnum(p[4])) {
-			cur = new_token(TK_ELSE, cur, p, 4);
-			p += 4;
+		char *kw = fetch_reserved(p);
+		if (kw) {
+			int len = strlen(kw);
+			cur = new_token(TK_RESERVED, cur, p, len);
+			p += len;
 			continue;
 		}
 
