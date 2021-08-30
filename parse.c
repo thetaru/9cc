@@ -33,7 +33,7 @@ void program() {
 // assign = equality ("=" assign)?
 Node *assign() {
 	Node *node = equality();
-	if (consume("=")) 
+	if (consume("="))
 		node = new_binary(ND_ASSIGN, node, assign());
 	return node;
 }
@@ -44,12 +44,27 @@ Node *expr() {
 }
 
 // stmt = expr ";" |
+//      | "{" stmt* "}"
 //      | "if" "(" expr ")" stmt ("else" stmt)?
 //      | "while" "(" expr ")" stmt
 //      | "for" "(" expr? ";" expr? ";" expr? ")" stmt
 //      | "return" expr ";"
 Node *stmt() {
 	Node *node;
+
+	if (consume("{")) {
+		Node head;
+		head.next = NULL;
+		Node *cur = &head;
+		while(!consume("}")) {
+			cur->next = stmt();
+			cur = cur->next;
+		}
+		node = calloc(1, sizeof(Node));
+		node->kind = ND_BLOCK;
+		node->body = head.next;
+		return node;
+	}
 
 	if (consume("if")) {
 		// "("と")"の確認をしないといけないためnew_binaryは使用不可
