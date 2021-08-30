@@ -78,6 +78,7 @@ typedef enum {
 	ND_WHILE,  // while
 	ND_FOR,    // for
 	ND_BLOCK,  // { ... }
+	ND_FUNC,    // 関数の定義
 	ND_FUNCALL, // 関数の呼び出し
 } NodeKind;
 
@@ -115,6 +116,7 @@ Node *new_binary(NodeKind kind, Node *lhs, Node *rhs);
 Node *new_node_num(int val);
 
 void program();
+Node *function();
 Node *assign();
 Node *expr();
 Node *stmt();

@@ -31,9 +31,41 @@ void gen(Node *node) {
 		printf("  mov [rax], rdi\n");
 		printf("  push rdi\n");
 		return;
+	case ND_FUNC:
+		printf("%s:\n", node->funcname);
+
+		// プロローグ
+		printf("  push rbp\n");
+		printf("  mov rbp, rsp\n");
+		printf("  sub rsp, 208\n");
+
+		// コード生成
+		while (node->body) {
+			gen(node->body);
+			node->body = node->body->next;
+			printf("  pop rax\n");
+		}
+
+		// エピローグ
+		printf(".Lreturn.%s:\n", node->funcname);
+		printf("  mov rsp, rbp\n");
+		printf("  pop rbp\n");
+		printf("  ret\n");
+		return;
 	case ND_FUNCALL: {
+		int seq = labelseq++;
+		printf("  mov rax, rsp\n");
+		printf("  and rax, 15\n");
+		printf("  jnz .L.call.%d\n", seq);
+		printf("  mov rax, 0\n");
 		printf("  call %s\n", node->funcname);
-		printf("  push rax\n");
+		printf("  jmp .L.end.%d\n", seq);
+		printf(".L.call.%d:\n", seq);
+		printf("  sub rsp, 8\n");
+		printf("  mov rax, 0\n");
+		printf("  call %s\n", node->funcname);
+		printf("  add rsp, 8\n");
+		printf(".L.end.%d:\n", seq);
 		return;
 	}
 	case ND_BLOCK:

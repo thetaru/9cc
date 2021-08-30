@@ -25,9 +25,37 @@ Node *new_node_num(int val) {
 void program() {
 	int i = 0;
 	while(!at_eof()) {
-		code[i++] = stmt();
+		code[i++] = function();
 	}
 	code[i] = NULL;
+}
+
+// function = ident "(" ")" "{" stmt* "}"
+Node *function() {
+	Node *node;
+	Token *tok = consume_tokenkind(TK_IDENT);
+	if (!tok)
+		error("%s is not function.\n",  tok->str);
+	node = calloc(1, sizeof(Node));
+	node->kind = ND_FUNC;
+	node->funcname = calloc(1, tok->len + 1);
+	strncpy(node->funcname, tok->str, tok->len);
+	expect("(");
+	expect(")");
+	expect("{");
+	
+	Node head;
+	head.next = NULL;
+	Node *cur = &head;
+
+	while (!consume("}")) {
+		cur->next = stmt();
+		cur = cur->next;
+	}
+
+	node->body = head.next;
+
+	return node;
 }
 
 // assign = equality ("=" assign)?
