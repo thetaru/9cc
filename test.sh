@@ -1,11 +1,17 @@
 #!/bin/bash
 
+# Test Functions
+cat <<EOF | cc -xc -c -o tmp2.o -
+#include <stdio.h>
+int foo() { printf("OK\n"); }
+EOF
+
 assert() {
     expected="$1"
     input="$2"
 
     ./9cc "$input" > tmp.s
-    cc -o tmp tmp.s
+    cc -o tmp tmp.s tmp2.o
     ./tmp
     actual="$?"
 
@@ -67,9 +73,13 @@ assert 10 "i = 1; while (i < 10) i = i + 1; return i;"
 
 # FOR
 assert 55 "sum = 0; for (i = 1; i <= 10; i = i + 1) sum = sum + i; return sum;"
+#assert 3  "for (;;) return 3; return 5;" 未対応
 
 # BLOCK
 assert 55 "sum = 0; for (i = 1; i <= 10; i = i + 1) {sum = sum + i;} return sum;"
 assert 0  "a = 1; if (a == 1) { return 0; } else { return 1; }"
+
+# FUNCALL(とりあえず呼び出せればOK)
+assert 0 "foo();"
 
 echo OK

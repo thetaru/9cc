@@ -31,6 +31,11 @@ void gen(Node *node) {
 		printf("  mov [rax], rdi\n");
 		printf("  push rdi\n");
 		return;
+	case ND_FUNCALL: {
+		printf("  call %s\n", node->funcname);
+		printf("  push rax\n");
+		return;
+	}
 	case ND_BLOCK:
 		while (node->body) {
 			gen(node->body);
