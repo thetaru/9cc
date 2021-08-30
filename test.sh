@@ -73,7 +73,7 @@ assert 10 "i = 1; while (i < 10) i = i + 1; return i;"
 
 # FOR
 assert 55 "sum = 0; for (i = 1; i <= 10; i = i + 1) sum = sum + i; return sum;"
-#assert 3  "for (;;) return 3; return 5;" 未対応
+assert 3  "for (;;) return 3;"
 
 # BLOCK
 assert 55 "sum = 0; for (i = 1; i <= 10; i = i + 1) {sum = sum + i;} return sum;"

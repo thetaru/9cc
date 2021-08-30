@@ -58,8 +58,8 @@ void expect(char *op) {
 	if (token->kind != TK_RESERVED ||
 		strlen(op) != token->len ||
 		memcmp(token->str, op, token->len))
-		error_at(token->str, "'%c'ではありません", op);
-		token = token->next;
+		error_at(token->str, "'%s'ではありません", op);
+	token = token->next;
 }
 
 // 次のトークンが数値の場合、トークンを1つ読み進めてその値を返す。

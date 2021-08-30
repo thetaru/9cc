@@ -94,12 +94,21 @@ Node *stmt() {
 		expect("(");
 		node = calloc(1, sizeof(Node));
 		node->kind = ND_FOR;
-		node->init = expr();
-		expect(";");
-		node->cond = expr();
-		expect(";");
-		node->inc = expr();
-		expect(")");
+
+		// トークンを1つ先読みする
+		if (!consume(";")) {
+			node->init = expr();
+			expect(";");
+		}
+		if (!consume(";")) {
+			node->cond = expr();
+			expect(";");
+		}
+		if (!consume(")")) {
+			node->inc = expr();
+			expect(")");
+		}
+
 		node->then = stmt();
 		return node;
 	}
