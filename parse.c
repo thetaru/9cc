@@ -53,6 +53,7 @@ Node *stmt() {
 	Node *node;
 
 	if (consume("{")) {
+		// ブロック内のステートメントをNodeの単方向リストとして表現する
 		Node head;
 		head.next = NULL;
 		Node *cur = &head;
