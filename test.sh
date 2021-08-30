@@ -3,7 +3,7 @@
 # Test Functions
 cat <<EOF | cc -xc -c -o tmp2.o -
 #include <stdio.h>
-int foo() { printf("OK\n"); }
+int foo() { return 3; }
 EOF
 
 assert() {
@@ -80,6 +80,6 @@ assert 55 "sum = 0; for (i = 1; i <= 10; i = i + 1) {sum = sum + i;} return sum;
 assert 0  "a = 1; if (a == 1) { return 0; } else { return 1; }"
 
 # FUNCALL(とりあえず呼び出せればOK)
-assert 0 "foo();"
+assert 3 "foo();"
 
 echo OK

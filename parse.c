@@ -216,7 +216,8 @@ Node *primary() {
 		if (consume("(")) {
 			Node *node = calloc(1, sizeof(Node));
 			node->kind = ND_FUNCALL;
-			node->funcname = tok->str;
+			node->funcname = calloc(1, tok->len + 1);
+			strncpy(node->funcname, tok->str, tok->len);
 			expect(")");
 			return node;
 		}
