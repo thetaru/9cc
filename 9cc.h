@@ -103,9 +103,10 @@ struct Node {
 	Node *body;    // kindがND_BLOCKの場合のみ使う
 
 	/*
-	 * funcname ()
+	 * funcname (args)
 	 */
 	char *funcname; // 関数名
+	Node *args;     // 引数
 
 	int val;       // kindがND_NUMの場合のみ使う
 	int offset;    // kindがND_LVARの場合のみ使う

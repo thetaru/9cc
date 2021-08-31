@@ -22,6 +22,28 @@ Node *new_node_num(int val) {
 	return node;
 }
 
+// ノードに関数の引数を追加し、そのの単方向リストを返す。
+// 引数がない場合はNULLを返す。
+Node *func_args() {
+	// 引数がない場合
+	if (consume(")")) {
+		return NULL;
+	}
+
+	// 引数がある場合
+	Node head;
+	head.next = NULL;
+	Node *cur = &head;
+	cur->next = expr(); // 先に引数を1つ読み取る
+	cur = cur->next;
+	while(consume(",")) {
+		cur->next = expr();
+		cur = cur->next;
+	}
+	expect(")");
+	return head.next;
+}
+
 void program() {
 	int i = 0;
 	while(!at_eof()) {
@@ -30,7 +52,7 @@ void program() {
 	code[i] = NULL;
 }
 
-// function = ident "(" ")" "{" stmt* "}"
+// function = ident "(" ident* ")" "{" stmt* "}"
 Node *function() {
 	Node *node;
 	Token *tok = consume_tokenkind(TK_IDENT);
@@ -40,14 +62,14 @@ Node *function() {
 	node->kind = ND_FUNC;
 	node->funcname = calloc(1, tok->len + 1);
 	strncpy(node->funcname, tok->str, tok->len);
+
 	expect("(");
-	expect(")");
+	node->args = func_args();
+
 	expect("{");
-	
 	Node head;
 	head.next = NULL;
 	Node *cur = &head;
-
 	while (!consume("}")) {
 		cur->next = stmt();
 		cur = cur->next;
@@ -229,7 +251,7 @@ Node *unary() {
 	return primary();
 }
 
-// primary = num | ident ("(" | ")")? | "(" expr ")"
+// primary = num | ident ("(" expr* ")")? | "(" expr ")"
 Node *primary() {
 	// 次のトークンが"("なら、"(" expr ")"のはず
 	if (consume("(")) {
@@ -246,7 +268,10 @@ Node *primary() {
 			node->kind = ND_FUNCALL;
 			node->funcname = calloc(1, tok->len + 1);
 			strncpy(node->funcname, tok->str, tok->len);
-			expect(")");
+
+			// 引数の割り当て
+			node->args = func_args();
+
 			return node;
 		}
 

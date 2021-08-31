@@ -2,6 +2,7 @@
 
 // ラベルの通し番号
 int labelseq = 1;
+char *argreg[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
 
 void gen_lval(Node *node) {
 	if (node->kind != ND_LVAR)
@@ -31,13 +32,23 @@ void gen(Node *node) {
 		printf("  mov [rax], rdi\n");
 		printf("  push rdi\n");
 		return;
-	case ND_FUNC:
+	case ND_FUNC: {
+		int nargs = 0;
+		while (node->args) {
+			node->args = node->args->next;
+			nargs++;
+		}
+
 		printf("%s:\n", node->funcname);
 
 		// プロローグ
 		printf("  push rbp\n");
 		printf("  mov rbp, rsp\n");
-		printf("  sub rsp, 208\n");
+		printf("  sub rsp, %d\n", 206);
+		for(int i = 0; node->args; i++) {
+			node->args = node->args->next;
+			printf("  push %s\n", argreg[i]);
+		}
 
 		// コード生成
 		while (node->body) {
@@ -52,8 +63,18 @@ void gen(Node *node) {
 		printf("  pop rbp\n");
 		printf("  ret\n");
 		return;
+	}
 	case ND_FUNCALL: {
 		int seq = labelseq++;
+		int nargs = 0;
+		while (node->args) {
+			gen(node->args);
+			node->args = node->args->next;
+			nargs++;
+		}
+		for (int i = nargs - 1; i >= 0; i--)
+			printf("  pop %s\n", argreg[i]);
+
 		printf("  mov rax, rsp\n");
 		printf("  and rax, 15\n");
 		printf("  jnz .L.call.%d\n", seq);
@@ -66,6 +87,8 @@ void gen(Node *node) {
 		printf("  call %s\n", node->funcname);
 		printf("  add rsp, 8\n");
 		printf(".L.end.%d:\n", seq);
+
+		printf("  push rax\n");
 		return;
 	}
 	case ND_BLOCK:
