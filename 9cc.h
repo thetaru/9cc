@@ -55,7 +55,8 @@ LVar *find_lvar(Token *tok);
 
 extern char *user_input;
 extern Token *token;
-extern LVar *locals;
+extern LVar *locals[];
+extern int funcseq; // 関数の通し番号
 
 //
 // parse.c

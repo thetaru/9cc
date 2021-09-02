@@ -32,70 +32,66 @@ void gen(Node *node) {
 		printf("  mov [rax], rdi\n");
 		printf("  push rdi\n");
 		return;
-	case ND_FUNC: {
+	case ND_FUNC: { // 関数の定義
 		int nargs = 0;
-		while (node->args) {
-			node->args = node->args->next;
-			nargs++;
-		}
 
 		printf("%s:\n", node->funcname);
 
 		// プロローグ
 		printf("  push rbp\n");
 		printf("  mov rbp, rsp\n");
-		printf("  sub rsp, %d\n", 206);
-		for(int i = 0; node->args; i++) {
-			node->args = node->args->next;
-			printf("  push %s\n", argreg[i]);
+		//printf("  sub rsp, %d\n", 208);
+
+		int i = 0;
+		for(Node *arg = node->args; arg; arg = arg->next) {
+			printf("  push %s\n", argreg[i++]);
+			nargs++;
 		}
 
 		// コード生成
-		while (node->body) {
-			gen(node->body);
-			node->body = node->body->next;
-			printf("  pop rax\n");
+		for (Node *body = node->body; body; body = body->next) {
+			gen(body);
 		}
 
 		// エピローグ
-		printf(".Lreturn.%s:\n", node->funcname);
-		printf("  mov rsp, rbp\n");
-		printf("  pop rbp\n");
-		printf("  ret\n");
+		// returnするなら不要?(voidとかだと必要になってくるのかな)
+		//printf("  mov rsp, rbp\n");
+		//printf("  pop rbp\n");
+		//printf("  ret\n");
 		return;
 	}
-	case ND_FUNCALL: {
+	case ND_FUNCALL: { // 関数の呼び出し
 		int seq = labelseq++;
 		int nargs = 0;
-		while (node->args) {
-			gen(node->args);
-			node->args = node->args->next;
+		for (Node *arg = node->args; arg; arg = arg->next) {
+			gen(arg);
 			nargs++;
 		}
-		for (int i = nargs - 1; i >= 0; i--)
-			printf("  pop %s\n", argreg[i]);
 
-		printf("  mov rax, rsp\n");
-		printf("  and rax, 15\n");
-		printf("  jnz .L.call.%d\n", seq);
-		printf("  mov rax, 0\n");
+		// 引数の引き渡し?
+		for (int i = nargs - 1; i >= 0; i--) {
+			printf("  pop %s\n", argreg[i]);
+		}
+
+		//printf("  mov rax, rsp\n");
+		//printf("  and rax, 15\n");
+		//printf("  jnz .L.call.%d\n", seq);
+		//printf("  mov rax, 0\n");
 		printf("  call %s\n", node->funcname);
-		printf("  jmp .L.end.%d\n", seq);
-		printf(".L.call.%d:\n", seq);
-		printf("  sub rsp, 8\n");
-		printf("  mov rax, 0\n");
-		printf("  call %s\n", node->funcname);
-		printf("  add rsp, 8\n");
-		printf(".L.end.%d:\n", seq);
+		//printf("  jmp .L.end.%d\n", seq);
+		//printf(".L.call.%d:\n", seq);
+		//printf("  sub rsp, 8\n");
+		//printf("  mov rax, 0\n");
+		//printf("  call %s\n", node->funcname);
+		//printf("  add rsp, 8\n");
+		//printf(".L.end.%d:\n", seq);
 
 		printf("  push rax\n");
 		return;
 	}
 	case ND_BLOCK:
-		while (node->body) {
-			gen(node->body);
-			node->body = node->body->next;
-			printf("  pop rax\n");
+		for (Node *body = node->body; body; body = body->next) {
+			gen(body);
 		}
 		return;
 	case ND_IF: {
@@ -105,24 +101,20 @@ void gen(Node *node) {
 		 *
 		 */
 		int seq = labelseq++;
+		gen(node->lhs);
+		printf("  pop rax\n");
+		printf("  cmp rax, 0\n");
 		if (node->els) { // if-else文
-			gen(node->lhs);
-			printf("  pop rax\n");
-			printf("  cmp rax, 0\n");
 			printf("  je  .Lelse%d\n", seq);
 			gen(node->rhs);
 			printf("  jmp .Lend%d\n", seq);
 			printf(".Lelse%d:\n", seq);
 			gen(node->els);
-			printf(".Lend%d:\n", seq);
 		} else { // if文
-			gen(node->lhs);
-			printf("  pop rax\n");
-			printf("  cmp rax, 0\n");
 			printf("  je  .Lend%d\n", seq);
 			gen(node->rhs);
-			printf(".Lend%d:\n", seq);
 		}
+		printf(".Lend%d:\n", seq);
 		return;
 	}
 	case ND_WHILE: {

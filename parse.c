@@ -22,7 +22,7 @@ Node *new_node_num(int val) {
 	return node;
 }
 
-// ノードに関数の引数を追加し、そのの単方向リストを返す。
+// ノードに呼び出された関数の引数を追加し、その単方向リストを返す。
 // 引数がない場合はNULLを返す。
 Node *func_args() {
 	// 引数がない場合
@@ -44,6 +44,36 @@ Node *func_args() {
 	return head.next;
 }
 
+// ローカル変数を設定する
+Node *set_lvar(Token *tok) {
+	Node *node = calloc(1, sizeof(Node));
+	node->kind = ND_LVAR;
+	LVar *lvar = find_lvar(tok);
+	if (lvar) {
+		node->offset = lvar->offset;
+	} else {
+		lvar = calloc(1, sizeof(LVar));
+		lvar->next = locals[funcseq];
+		lvar->name = tok->str;
+		lvar->len = tok->len;
+
+		// DEBUG - START
+		char *name =  calloc(1, tok->len + 1);
+		strncpy(name, tok->str, tok->len);
+		fprintf(stderr, "DEBUG: local variable %s is defined.\n", name);
+		// DEBUG - END
+
+		if (locals[funcseq] == NULL) {
+			lvar->offset = 8;
+		} else {
+			lvar->offset += locals[funcseq]->offset + 8;
+		}
+		node->offset = lvar->offset;
+		locals[funcseq] = lvar;
+	}
+	return node;
+}
+
 void program() {
 	int i = 0;
 	while(!at_eof()) {
@@ -54,6 +84,7 @@ void program() {
 
 // function = ident "(" ident* ")" "{" stmt* "}"
 Node *function() {
+	funcseq++;
 	Node *node;
 	Token *tok = consume_tokenkind(TK_IDENT);
 	if (!tok)
@@ -63,18 +94,35 @@ Node *function() {
 	node->funcname = calloc(1, tok->len + 1);
 	strncpy(node->funcname, tok->str, tok->len);
 
-	expect("(");
-	node->args = func_args();
+	// DEBUG - START
+	fprintf(stderr, "DEBUG: function %s is defined.\n", node->funcname);
+	// DEBUG - END
 
-	expect("{");
+	// ( arg_1, ... , arg_n )
+	expect("(");
 	Node head;
 	head.next = NULL;
 	Node *cur = &head;
+	while (!consume(")")) {
+		Token *tok = consume_tokenkind(TK_IDENT);
+		if (tok) {
+			cur->next = set_lvar(tok);
+			cur = cur->next;
+		}
+		if (consume(")"))
+			break;
+		expect(",");
+	}
+	node->args = head.next;
+
+	// { ... }
+	expect("{");
+	head.next = NULL;
+	cur = &head;
 	while (!consume("}")) {
 		cur->next = stmt();
 		cur = cur->next;
 	}
-
 	node->body = head.next;
 
 	return node;
@@ -85,6 +133,7 @@ Node *assign() {
 	Node *node = equality();
 	if (consume("="))
 		node = new_binary(ND_ASSIGN, node, assign());
+
 	return node;
 }
 
@@ -276,28 +325,9 @@ Node *primary() {
 		}
 
 		// 変数の場合
-		Node *node = calloc(1, sizeof(Node));
-		node->kind = ND_LVAR;
-		LVar *lvar = find_lvar(tok);
-		if (lvar) {
-			node->offset = lvar->offset;
-		} else {
-			lvar = calloc(1, sizeof(LVar));
-			lvar->next = locals;
-			lvar->name = tok->str;
-			lvar->len = tok->len;
-			if (locals == NULL) {
-				lvar->offset = 8;
-			} else {
-				lvar->offset += locals->offset + 8;
-			}
-			node->offset = lvar->offset;
-			locals = lvar;
-		}
-		return node;
+		return set_lvar(tok);
 	}
 
 	// そうでなければ数値のはず
 	return new_node_num(expect_number());
 }
-

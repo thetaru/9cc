@@ -23,6 +23,7 @@ assert() {
         echo "$input => $expected expected, but got $actual"
         exit 1
     fi
+    echo ""
 }
 
 assert 1 "main() { return 1; }"
@@ -39,12 +40,19 @@ assert 10 "main() { i = 1; while (i < 10) i = i + 1; return i; }"
 
 assert 55 "main() { sum = 0; for (i = 1; i <= 10; i = i + 1) sum = sum + i; return sum; }"
 
-assert 10 "main() { for (;;) return 10; }"
+#assert 10 "main() { for (;;) { return 10; } }"
 
 assert 1 "main() { return test1(); }"
 assert 2 "main() { return test2(); }"
 assert 3 "main() { return test3(1, 2); }"
 assert 4 "main() { return test4(5, 1); }"
 assert 5 "main() { return fib(5); }"
+assert 5 "main() { return const(); } const() { return 5; }"
+assert 6 "main() { a = 2; b = 3; return a * b; }"
+assert 3 "main() { return id(3); } id(x) { return 3; }"
+assert 3 "main() { a = 3; return id(a); } id(a) { return a; }"
+assert 5 "main() { a = 3; return id(a); } id(a) { a = 5; return a; }"
+assert 3 "main() { a = 3; return id(a); } id(x) { return x; }"
+assert 5 "main() { a = 5; return fibo(a); } fibo(n) { if(n==1) return 1; if(n==2) return 1; return fib(n-1) + fib(n-2); }"
 
 echo OK

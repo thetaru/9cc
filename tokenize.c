@@ -5,7 +5,8 @@ char *user_input;
 // 現在着目しているトークン
 Token *token;
 // ローカル変数
-LVar *locals;
+LVar *locals[100];
+int funcseq = 0;
 
 // エラーを報告するための関数
 // printfと同じ引数を取る
@@ -179,7 +180,7 @@ Token *tokenize() {
 // ND_LVARトークンがローカル変数localsに含まれていることを確認する
 // 見つからなかった場合はNULLを返す
 LVar *find_lvar(Token *tok) {
-	for (LVar *var = locals; var; var = var->next)
+	for (LVar *var = locals[funcseq]; var; var = var->next)
 		if (var->len == tok->len && !memcmp(tok->str, var->name, var->len))
 			return var;
 	return NULL;
