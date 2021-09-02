@@ -40,7 +40,7 @@ assert 10 "main() { i = 1; while (i < 10) i = i + 1; return i; }"
 
 assert 55 "main() { sum = 0; for (i = 1; i <= 10; i = i + 1) sum = sum + i; return sum; }"
 
-#assert 10 "main() { for (;;) { return 10; } }"
+assert 10 "main() { for (;;) return 10; }"
 
 assert 1 "main() { return test1(); }"
 assert 2 "main() { return test2(); }"

@@ -48,16 +48,25 @@ void gen(Node *node) {
 			nargs++;
 		}
 
+		/* MEMO:
+		 *       for(;;)だと変数を定義していない場合でもrspをずらさないと失敗する。
+		 */
+		int offset = 16;
+		if (locals[funcseq]) {
+			offset = locals[funcseq]->offset;
+			offset -= nargs * 8;
+		}
+		printf("  sub rsp, %d\n", offset);
+
 		// コード生成
 		for (Node *body = node->body; body; body = body->next) {
 			gen(body);
 		}
 
 		// エピローグ
-		// returnするなら不要?(voidとかだと必要になってくるのかな)
-		//printf("  mov rsp, rbp\n");
-		//printf("  pop rbp\n");
-		//printf("  ret\n");
+		printf("  mov rsp, rbp\n");
+		printf("  pop rbp\n");
+		printf("  ret\n");
 		return;
 	}
 	case ND_FUNCALL: { // 関数の呼び出し
@@ -73,18 +82,18 @@ void gen(Node *node) {
 			printf("  pop %s\n", argreg[i]);
 		}
 
-		//printf("  mov rax, rsp\n");
-		//printf("  and rax, 15\n");
-		//printf("  jnz .L.call.%d\n", seq);
-		//printf("  mov rax, 0\n");
+		printf("  mov rax, rsp\n");
+		printf("  and rax, 15\n");
+		printf("  jnz .L.call.%d\n", seq);
+		printf("  mov rax, 0\n");
 		printf("  call %s\n", node->funcname);
-		//printf("  jmp .L.end.%d\n", seq);
-		//printf(".L.call.%d:\n", seq);
-		//printf("  sub rsp, 8\n");
-		//printf("  mov rax, 0\n");
-		//printf("  call %s\n", node->funcname);
-		//printf("  add rsp, 8\n");
-		//printf(".L.end.%d:\n", seq);
+		printf("  jmp .L.end.%d\n", seq);
+		printf(".L.call.%d:\n", seq);
+		printf("  sub rsp, 8\n");
+		printf("  mov rax, 0\n");
+		printf("  call %s\n", node->funcname);
+		printf("  add rsp, 8\n");
+		printf(".L.end.%d:\n", seq);
 
 		printf("  push rax\n");
 		return;
