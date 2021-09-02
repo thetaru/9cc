@@ -287,7 +287,7 @@ Node *mul() {
 	}
 }
 
-// unary = ("+" | "-")? primary | primary
+// unary = ("+" | "-")? primary | ("*" | "&") unary
 Node *unary() {
 	if (consume("+"))
 		// +x
@@ -297,6 +297,10 @@ Node *unary() {
 		// -x
 		// -> 0-x
 		return new_binary(ND_SUB, new_node_num(0), unary());
+	if (consume("*"))
+		return new_binary(ND_DEREF, unary(), NULL);
+	if (consume("&"))
+		return new_binary(ND_ADDR, unary(), NULL);
 	return primary();
 }
 
