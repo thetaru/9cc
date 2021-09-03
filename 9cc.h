@@ -116,6 +116,7 @@ struct Node {
 
 	int val;       // kindがND_NUMの場合のみ使う
 	int offset;    // kindがND_LVARの場合のみ使う
+	Type *type;    // kindがND_LVARの場合のみ使う
 };
 
 Node *new_node(NodeKind kind);
@@ -148,10 +149,9 @@ typedef enum {
 struct Type {
 	TypeKind ty;
 	struct Type *ptr_to; // kindがTY_PTRの場合のみ使う
-	Token *name;
+	int size;            // 型のサイズを指定
 };
 
-bool is_integer(Type *ty);
 char *consume_type();
 Type *set_type(LVar *lvar, char *tyname);
 

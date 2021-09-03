@@ -19,9 +19,6 @@ char *consume_type() {
 
 // 変数に型を設定する
 Type *set_type(LVar *lvar, char *tyname) {
-	Type *type;
-	type = calloc(1, sizeof(Type));
-	type->ptr_to = NULL;
 	// int
 	if (startswith(tyname, "int")) {
 		// DEBUG - START
@@ -34,10 +31,17 @@ Type *set_type(LVar *lvar, char *tyname) {
 		fprintf(stderr, "DEBUG: type of variable '%s' is %s.\n", lvar_name, type_name);
 		// DEBUG - END
 
-		type->ty = TY_INT;
+		// 型を設定
+		if (lvar->ty->ptr_to) { // int型へのポインタ
+			lvar->ty->ptr_to->ty = TY_INT;
+			lvar->ty->ptr_to->size = 4;
+		} else { // int型
+			lvar->ty->ty = TY_INT;
+			lvar->ty->size = 4;
+		}
 	}
 
 	// 型を追加するたびに追記する...
 
-	return type;
+	return lvar->ty;
 }

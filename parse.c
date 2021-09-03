@@ -53,11 +53,13 @@ Node *set_lvar(char *tyname) {
 
 	Type *type;
 	type = calloc(1, sizeof(Type));
+	type->ptr_to = NULL;
 	while (consume("*")) {
 		Type *t;
 		t = calloc(1, sizeof(Type));
 		t->ty = TY_PTR;
 		t->ptr_to = type;
+		t->size = 8;
 		type = t;
 	}
 
@@ -70,27 +72,29 @@ Node *set_lvar(char *tyname) {
 		char *name =  calloc(1, tok->len + 1);
 		strncpy(name, tok->str, tok->len);
 		error("'%s'は定義済みの変数です。\n", name);
-	} else {
-		lvar = calloc(1, sizeof(LVar));
-		lvar->next = locals[funcseq];
-		lvar->name = tok->str;
-		lvar->len = tok->len;
-		lvar->ty = set_type(lvar, tyname);
-
-		// DEBUG - START
-		char *name =  calloc(1, tok->len + 1);
-		strncpy(name, tok->str, tok->len);
-		fprintf(stderr, "DEBUG: local variable %s is defined.\n", name);
-		// DEBUG - END
-
-		if (locals[funcseq] == NULL) {
-			lvar->offset = 8;
-		} else {
-			lvar->offset += locals[funcseq]->offset + 8;
-		}
-		node->offset = lvar->offset;
-		locals[funcseq] = lvar;
 	}
+
+	lvar = calloc(1, sizeof(LVar));
+	lvar->next = locals[funcseq];
+	lvar->name = tok->str;
+	lvar->len = tok->len;
+	lvar->ty = type;
+	lvar->ty = set_type(lvar, tyname);
+
+	// DEBUG - START
+	char *name =  calloc(1, tok->len + 1);
+	strncpy(name, tok->str, tok->len);
+	fprintf(stderr, "DEBUG: local variable %s is defined.\n", name);
+	// DEBUG - END
+
+	if (locals[funcseq] == NULL) {
+		lvar->offset = 8;
+	} else {
+		lvar->offset += locals[funcseq]->offset + 8;
+	}
+	node->offset = lvar->offset;
+	node->type = lvar->ty;
+	locals[funcseq] = lvar;
 	return node;
 }
 
@@ -105,6 +109,7 @@ Node *use_lvar(Token *tok) {
 		error("'%s'は未定義の変数です。\n", name);
 	}
 	node->offset = lvar->offset;
+	node->type = lvar->ty;
 	return node;
 }
 
@@ -319,12 +324,31 @@ Node *add() {
 	Node *node = mul();
 
 	for (;;) {
-		if (consume("+"))
-			node = new_binary(ND_ADD, node, mul());
-		else if (consume("-"))
-			node = new_binary(ND_SUB, node, mul());
-		else
+		if (consume("+")) {
+			Node *r = mul();
+			if (node->type && node->type->ty == TY_PTR) {
+				// DEBUG - START
+				fprintf(stderr, "DEBUG: type size is %d.\n", node->type->ptr_to->size);
+				// DEBUG - END
+
+				int ptr_size = node->type->ptr_to->size;
+				r = new_binary(ND_MUL, r, new_node_num(ptr_size));
+			}
+			node = new_binary(ND_ADD, node, r);
+		} else if (consume("-")) {
+			Node *r = mul();
+			if (node->type && node->type->ty == TY_PTR) {
+				// DEBUG - START
+				fprintf(stderr, "DEBUG: type size is %d.\n", node->type->ptr_to->size);
+				// DEBUG - END
+
+				int ptr_size = node->type->ptr_to->size;
+				r = new_binary(ND_MUL, r, new_node_num(ptr_size));
+			}
+			node = new_binary(ND_SUB, node, r);
+		} else {
 			return node;
+		}
 	}
 }
 
