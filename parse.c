@@ -74,6 +74,19 @@ Node *set_lvar(Token *tok) {
 	return node;
 }
 
+Node *use_lvar(Token *tok) {
+	Node *node = calloc(1, sizeof(Node));
+	node->kind = ND_LVAR;
+	LVar *lvar = find_lvar(tok);
+	if (!lvar) {
+		char *name =  calloc(1, tok->len + 1);
+		strncpy(name, tok->str, tok->len);
+		error("'%s'は未定義の変数です。\n", name);
+	}
+	node->offset = lvar->offset;
+	return node;
+}
+
 void program() {
 	int i = 0;
 	while(!at_eof()) {
@@ -222,7 +235,7 @@ Node *stmt() {
 		return node;
 	}
 
-	// type ident
+	// 変数定義
 	if (is_type()) {
 		Token *tok = consume_tokenkind(TK_IDENT);
 		node = set_lvar(tok);
@@ -337,8 +350,8 @@ Node *primary() {
 			return node;
 		}
 
-		// 変数の場合
-		return set_lvar(tok);
+		// (定義済みの)変数の場合
+		return use_lvar(tok);
 	}
 
 	// そうでなければ数値のはず

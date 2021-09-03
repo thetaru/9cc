@@ -38,7 +38,7 @@ assert 1 "main() { int a; a = 0; if (a != 0) { return 0; } else { return 1; } }"
 
 assert 10 "main() { int i; i = 1; while (i < 10) { i = i + 1; } return i; }"
 
-assert 55 "main() { int sum; sum = 0; for (i = 1; i <= 10; i = i + 1) sum = sum + i; return sum; }"
+assert 55 "main() { int sum; sum = 0; int i; i = 1; for (i = 1; i <= 10; i = i + 1) sum = sum + i; return sum; }"
 
 assert 10 "main() { for (;;) { return 10; } }"
 
@@ -55,6 +55,7 @@ assert 5 "main() { int a; a = 3; return id(a); } id(a) { int a; a = 5; return a;
 assert 3 "main() { int a; a = 3; return id(a); } id(x) { return x; }"
 assert 5 "main() { int a; a = 5; return fibo(a); } fibo(n) { if(n==1) return 1; if(n==2) return 1; return fib(n-1) + fib(n-2); }"
 
+assert 3 "main() { int x; x = 3; int y; y = &x; return *y; }"
 assert 3 "main() { int x; x = 3; int y; y = &x; return *y; }"
 assert 3 "main() { int x; x = 3; int y; y = 5; int z; z = &y + 8; return *z; }"
 
