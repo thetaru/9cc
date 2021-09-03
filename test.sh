@@ -51,7 +51,7 @@ assert 5 "int main() { return const(); } int const() { return 5; }"
 assert 6 "int main() { int a; a = 2; int b; b = 3; return a * b; }"
 assert 3 "int main() { return id(3); } int id(x) { return 3; }"
 assert 3 "int main() { int a; a = 3; return id(a); } int id(a) { return a; }"
-assert 5 "int main() { int a; a = 3; return id(a); } int id(a) { int a; a = 5; return a; }"
+assert 5 "int main() { int a; a = 3; return id(a); } int id(a) { a = 5; return a; }"
 assert 3 "int main() { int a; a = 3; return id(a); } int id(x) { return x; }"
 assert 5 "int main() { int a; a = 5; return fibo(a); } int fibo(n) { if(n==1) return 1; if(n==2) return 1; return fib(n-1) + fib(n-2); }"
 

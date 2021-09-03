@@ -50,7 +50,9 @@ Node *set_lvar(Token *tok) {
 	node->kind = ND_LVAR;
 	LVar *lvar = find_lvar(tok);
 	if (lvar) {
-		node->offset = lvar->offset;
+		char *name =  calloc(1, tok->len + 1);
+		strncpy(name, tok->str, tok->len);
+		error("'%s'は定義済みの変数です。\n", name);
 	} else {
 		lvar = calloc(1, sizeof(LVar));
 		lvar->next = locals[funcseq];
