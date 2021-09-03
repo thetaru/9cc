@@ -95,10 +95,16 @@ void program() {
 	code[i] = NULL;
 }
 
-// function = ident "(" ident* ")" "{" stmt* "}"
+// function = type ident "(" ident* ")" "{" stmt* "}"
 Node *function() {
 	funcseq++;
 	Node *node;
+
+	// type
+	if (!is_type())
+		error("型が定義されていません。");
+
+	// ident
 	Token *tok = consume_tokenkind(TK_IDENT);
 	if (!tok)
 		error("%s is not function.\n",  tok->str);
