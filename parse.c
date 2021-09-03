@@ -142,12 +142,13 @@ Node *expr() {
 	return assign();
 }
 
-// stmt = expr ";" |
+// stmt = expr ";"
 //      | "{" stmt* "}"
 //      | "if" "(" expr ")" stmt ("else" stmt)?
 //      | "while" "(" expr ")" stmt
 //      | "for" "(" expr? ";" expr? ";" expr? ")" stmt
 //      | "return" expr ";"
+//      | type ident ";"
 Node *stmt() {
 	Node *node;
 
@@ -217,11 +218,19 @@ Node *stmt() {
 		node = calloc(1, sizeof(Node));
 		node->kind = ND_RETURN;
 		node->lhs = expr();
-	} else {
-		// returnトークンでない場合
-		node = expr();
+		expect(";");
+		return node;
 	}
 
+	// type ident
+	if (is_type()) {
+		Token *tok = consume_tokenkind(TK_IDENT);
+		node = set_lvar(tok);
+		expect(";");
+		return node;
+	}
+
+	node = expr();
 	expect(";");
 	return node;
 }

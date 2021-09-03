@@ -5,6 +5,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+typedef struct Type Type;
+typedef struct Node Node;
+
 //
 // tokenize.c
 //
@@ -35,6 +38,7 @@ struct LVar {
 	LVar *next; // 次の変数かNULL
 	char *name; // 変数の名前
 	int len;    // 名前の長さ
+	Type *ty;   // 変数の型
 	int offset; // RBPからのオフセット
 };
 
@@ -85,7 +89,6 @@ typedef enum {
 	ND_DEREF   // *(アドレス参照)
 } NodeKind;
 
-typedef struct Node Node;
 // 抽象構文木のノードの型
 struct Node {
 	NodeKind kind; // ノードの型
@@ -132,6 +135,22 @@ Node *unary();
 Node *primary();
 
 extern Node *code[100];
+
+//
+// type.c
+//
+
+typedef enum {
+	TY_INT,        // int型
+} TypeKind;
+
+struct Type {
+	TypeKind kind;
+	Token *name;
+};
+
+bool is_integer(Type *ty);
+bool is_type();
 
 //
 // codegen.c
