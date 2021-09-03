@@ -142,15 +142,18 @@ extern Node *code[100];
 
 typedef enum {
 	TY_INT,        // int型
+	TY_PTR,        // ポインタ型
 } TypeKind;
 
 struct Type {
-	TypeKind kind;
+	TypeKind ty;
+	struct Type *ptr_to; // kindがTY_PTRの場合のみ使う
 	Token *name;
 };
 
 bool is_integer(Type *ty);
-bool is_type();
+char *consume_type();
+Type *set_type(LVar *lvar, char *tyname);
 
 //
 // codegen.c

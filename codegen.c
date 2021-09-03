@@ -5,6 +5,10 @@ int labelseq = 1;
 char *argreg[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
 
 void gen_lval(Node *node) {
+	if (node->kind == ND_DEREF) {
+		gen(node->lhs);
+		return;
+	}
 	if (node->kind != ND_LVAR)
 		error("代入の左辺値が変数ではありません");
 

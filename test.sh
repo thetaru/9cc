@@ -58,4 +58,6 @@ assert 5 "int main() { int a; a = 5; return fibo(a); } int fibo(int n) { if(n==1
 assert 3 "int main() { int x; x = 3; int y; y = &x; return *y; }"
 assert 3 "int main() { int x; x = 3; int y; y = 5; int z; z = &y + 8; return *z; }"
 
+assert 3 "int main() { int x; int *y; y = &x; *y = 3; return x; }"
+
 echo OK

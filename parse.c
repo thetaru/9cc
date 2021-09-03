@@ -45,9 +45,26 @@ Node *func_args() {
 }
 
 // ローカル変数を設定する
-Node *set_lvar(Token *tok) {
+// "*"* ident ";"
+// tyname: 変数に設定する型
+Node *set_lvar(char *tyname) {
 	Node *node = calloc(1, sizeof(Node));
 	node->kind = ND_LVAR;
+
+	Type *type;
+	type = calloc(1, sizeof(Type));
+	while (consume("*")) {
+		Type *t;
+		t = calloc(1, sizeof(Type));
+		t->ty = TY_PTR;
+		t->ptr_to = type;
+		type = t;
+	}
+
+	Token *tok = consume_tokenkind(TK_IDENT);
+	if (!tok)
+		error("変数が定義できません。\n");
+
 	LVar *lvar = find_lvar(tok);
 	if (lvar) {
 		char *name =  calloc(1, tok->len + 1);
@@ -58,6 +75,7 @@ Node *set_lvar(Token *tok) {
 		lvar->next = locals[funcseq];
 		lvar->name = tok->str;
 		lvar->len = tok->len;
+		lvar->ty = set_type(lvar, tyname);
 
 		// DEBUG - START
 		char *name =  calloc(1, tok->len + 1);
@@ -76,6 +94,7 @@ Node *set_lvar(Token *tok) {
 	return node;
 }
 
+// (定義済み)変数を利用する
 Node *use_lvar(Token *tok) {
 	Node *node = calloc(1, sizeof(Node));
 	node->kind = ND_LVAR;
@@ -103,7 +122,7 @@ Node *function() {
 	Node *node;
 
 	// type
-	if (!is_type())
+	if (!consume_type())
 		error("関数の型が未定義です。");
 
 	// ident
@@ -126,15 +145,14 @@ Node *function() {
 	Node *cur = &head;
 	while (!consume(")")) {
 		// type check
-		if (!is_type())
+		char *tyname = consume_type();
+		if (!tyname)
 			error("引数の型が未定義です。");
 
 		// arg
-		Token *tok = consume_tokenkind(TK_IDENT);
-		if (tok) {
-			cur->next = set_lvar(tok);
-			cur = cur->next;
-		}
+		cur->next = set_lvar(tyname);
+		cur = cur->next;
+
 		if (consume(")"))
 			break;
 		expect(",");
@@ -174,7 +192,7 @@ Node *expr() {
 //      | "while" "(" expr ")" stmt
 //      | "for" "(" expr? ";" expr? ";" expr? ")" stmt
 //      | "return" expr ";"
-//      | type ident ";"
+//      | type "*"* ident ";"
 Node *stmt() {
 	Node *node;
 
@@ -249,9 +267,11 @@ Node *stmt() {
 	}
 
 	// 変数定義
-	if (is_type()) {
-		Token *tok = consume_tokenkind(TK_IDENT);
-		node = set_lvar(tok);
+	// type "*"* ident ";"
+	char *tyname = consume_type();
+	if (tyname) {
+		// ident ";"
+		node = set_lvar(tyname);
 		expect(";");
 		return node;
 	}
