@@ -97,14 +97,14 @@ void program() {
 	code[i] = NULL;
 }
 
-// function = type ident "(" ident* ")" "{" stmt* "}"
+// function = type ident "(" type ident* ")" "{" stmt* "}"
 Node *function() {
 	funcseq++;
 	Node *node;
 
 	// type
 	if (!is_type())
-		error("型が定義されていません。");
+		error("関数の型が未定義です。");
 
 	// ident
 	Token *tok = consume_tokenkind(TK_IDENT);
@@ -119,12 +119,17 @@ Node *function() {
 	fprintf(stderr, "DEBUG: function %s is defined.\n", node->funcname);
 	// DEBUG - END
 
-	// ( arg_1, ... , arg_n )
+	// ( type_1 arg_1, ... , type_n arg_n )
 	expect("(");
 	Node head;
 	head.next = NULL;
 	Node *cur = &head;
 	while (!consume(")")) {
+		// type check
+		if (!is_type())
+			error("引数の型が未定義です。");
+
+		// arg
 		Token *tok = consume_tokenkind(TK_IDENT);
 		if (tok) {
 			cur->next = set_lvar(tok);
