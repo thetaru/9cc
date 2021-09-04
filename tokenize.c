@@ -89,7 +89,7 @@ int is_alnum(char c) {
 
 // 予約語を取得する
 char *fetch_reserved(char *p) {
-	static char *keywords[] = {"return", "if", "else", "while", "for", "int"};
+	static char *keywords[] = {"return", "if", "else", "while", "for", "int", "sizeof"};
 	for (int i = 0; i < sizeof(keywords) / sizeof(*keywords); i++) {
 		char *kw = keywords[i];
 		int len = strlen(kw);

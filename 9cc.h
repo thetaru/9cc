@@ -147,13 +147,13 @@ typedef enum {
 } TypeKind;
 
 struct Type {
-	TypeKind ty;
+	TypeKind kind;
 	struct Type *ptr_to; // kindがTY_PTRの場合のみ使う
 	int size;            // 型のサイズを指定
 };
 
 char *consume_type();
-Type *set_type(LVar *lvar, char *tyname);
+Type *set_type(char *tyname);
 
 //
 // codegen.c

@@ -52,12 +52,12 @@ Node *set_lvar(char *tyname) {
 	node->kind = ND_LVAR;
 
 	Type *type;
-	type = calloc(1, sizeof(Type));
+	type = set_type(tyname);
 	type->ptr_to = NULL;
 	while (consume("*")) {
 		Type *t;
 		t = calloc(1, sizeof(Type));
-		t->ty = TY_PTR;
+		t->kind = TY_PTR;
 		t->ptr_to = type;
 		t->size = 8;
 		type = t;
@@ -79,7 +79,6 @@ Node *set_lvar(char *tyname) {
 	lvar->name = tok->str;
 	lvar->len = tok->len;
 	lvar->ty = type;
-	lvar->ty = set_type(lvar, tyname);
 
 	// DEBUG - START
 	char *name =  calloc(1, tok->len + 1);
@@ -326,24 +325,24 @@ Node *add() {
 	for (;;) {
 		if (consume("+")) {
 			Node *r = mul();
-			if (node->type && node->type->ty == TY_PTR) {
+			if (node->type && node->type->kind == TY_PTR) {
 				// DEBUG - START
 				fprintf(stderr, "DEBUG: type size is %d.\n", node->type->ptr_to->size);
 				// DEBUG - END
 
-				int ptr_size = node->type->ptr_to->size;
-				r = new_binary(ND_MUL, r, new_node_num(ptr_size));
+				int size = node->type->ptr_to->size;
+				r = new_binary(ND_MUL, r, new_node_num(size));
 			}
 			node = new_binary(ND_ADD, node, r);
 		} else if (consume("-")) {
 			Node *r = mul();
-			if (node->type && node->type->ty == TY_PTR) {
+			if (node->type && node->type->kind == TY_PTR) {
 				// DEBUG - START
 				fprintf(stderr, "DEBUG: type size is %d.\n", node->type->ptr_to->size);
 				// DEBUG - END
 
-				int ptr_size = node->type->ptr_to->size;
-				r = new_binary(ND_MUL, r, new_node_num(ptr_size));
+				int size = node->type->ptr_to->size;
+				r = new_binary(ND_MUL, r, new_node_num(size));
 			}
 			node = new_binary(ND_SUB, node, r);
 		} else {
@@ -366,7 +365,7 @@ Node *mul() {
 	}
 }
 
-// unary = ("+" | "-")? primary | ("*" | "&") unary
+// unary = "sizeof" unary | ("+" | "-")? primary | ("*" | "&") unary
 Node *unary() {
 	if (consume("+"))
 		// +x
@@ -380,6 +379,22 @@ Node *unary() {
 		return new_binary(ND_DEREF, unary(), NULL);
 	if (consume("&"))
 		return new_binary(ND_ADDR, unary(), NULL);
+	if (consume("sizeof")) {
+		Node *node = unary();
+
+		int size;
+		// 定数の場合(数値のみ?)
+		if (!node->type) {
+			size = 4;
+		}
+
+		// 変数の場合
+		if (node->type) {
+			size = node->type->size;
+		}
+
+		return new_node_num(size);
+	}
 	return primary();
 }
 
