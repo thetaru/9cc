@@ -72,4 +72,6 @@ assert 4 "int main() { int *x; return sizeof(1); }"
 assert 4 "int main() { int *x; return sizeof(sizeof(1)); }"
 assert 4 "int main() { int *x; return sizeof(*x); }"
 
+assert 0 "int main() { int a[5]; return 0; }"
+
 echo OK

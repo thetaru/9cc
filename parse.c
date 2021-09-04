@@ -22,6 +22,19 @@ Node *new_node_num(int val) {
 	return node;
 }
 
+// 変数の型のサイズを取得する
+int get_tysize(Type *type) {
+	// 変数が利用する領域
+	int size = type->size; // ポインタ型でない場合の領域はこれでOK
+
+	while (type->ptr_to) {
+		type = type->ptr_to;
+		size = type->size;
+	}
+
+	return size;
+}
+
 // ノードに呼び出された関数の引数を追加し、その単方向リストを返す。
 // 引数がない場合はNULLを返す。
 Node *func_args() {
@@ -54,11 +67,13 @@ Node *set_lvar(char *tyname) {
 	Type *type;
 	type = set_type(tyname);
 	type->ptr_to = NULL;
+	type->array_size = 1; // 配列型でない変数も0次元の要素数1の配列とみなす
 	while (consume("*")) {
 		Type *t;
 		t = calloc(1, sizeof(Type));
 		t->kind = TY_PTR;
 		t->ptr_to = type;
+		t->array_size = 1;
 		t->size = 8;
 		type = t;
 	}
@@ -66,6 +81,19 @@ Node *set_lvar(char *tyname) {
 	Token *tok = consume_tokenkind(TK_IDENT);
 	if (!tok)
 		error("変数が定義できません。\n");
+
+	// 配列を定義する
+	// e.g. dim = 1, [3]
+	//      dim = 2, [3][5]
+	while (consume("[")) {
+		Type *t;
+		t = calloc(1, sizeof(Type));
+		t->kind = TY_ARRAY;
+		t->ptr_to = type;
+		t->array_size = expect_number(); //要素数を取得
+		type = t;
+		expect("]");
+	}
 
 	LVar *lvar = find_lvar(tok);
 	if (lvar) {
@@ -86,10 +114,34 @@ Node *set_lvar(char *tyname) {
 	fprintf(stderr, "DEBUG: local variable %s is defined.\n", name);
 	// DEBUG - END
 
-	if (locals[funcseq] == NULL) {
-		lvar->offset = 8;
+	// 変数が利用する領域
+	int var_size;
+
+	if (type->kind == TY_ARRAY) {
+		// 配列の場合
+		var_size = get_tysize(type);
+		while (type->ptr_to) {
+			var_size *= type->array_size;
+			type = type->ptr_to;
+		}
 	} else {
-		lvar->offset += locals[funcseq]->offset + 8;
+		// 配列でない場合
+		var_size = type->size;
+	}
+
+	// offsetは8の倍数でないといけないらしい...？
+	while ((var_size % 8) != 0) {
+		var_size += 4;
+	}
+
+	// DEBUG - START
+	fprintf(stderr, "DEBUG: type size of %s is %d.\n", name, var_size);
+	// DEBUG - END
+
+	if (locals[funcseq] == NULL) {
+		lvar->offset = var_size;
+	} else {
+		lvar->offset += locals[funcseq]->offset + var_size;
 	}
 	node->offset = lvar->offset;
 	node->type = lvar->ty;

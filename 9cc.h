@@ -144,12 +144,14 @@ extern Node *code[100];
 typedef enum {
 	TY_INT,        // int型
 	TY_PTR,        // ポインタ型
+	TY_ARRAY,      // 配列型
 } TypeKind;
 
 struct Type {
 	TypeKind kind;
 	struct Type *ptr_to; // kindがTY_PTRの場合のみ使う
 	int size;            // 型のサイズを指定
+	size_t array_size;   // 配列の要素数を意味する
 };
 
 char *consume_type();
