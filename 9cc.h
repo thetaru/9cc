@@ -42,6 +42,16 @@ struct LVar {
 	int offset; // RBPからのオフセット
 };
 
+typedef struct GVar GVar;
+
+struct GVar {
+	GVar *next; // 次の変数かNULL
+	char *name; // 変数の名前
+	int len;    // 変数の長さ
+	Type *ty;   // 変数の型
+	int pos;    // メモリ位置
+};
+
 void error(char *fmt, ...);
 void error_at(char *loc, char *fmt, ...);
 bool consume(char *op);
@@ -56,10 +66,12 @@ Token *new_token(TokenKind kind, Token *cur, char *str, int len);
 bool startswith(char *p, char *q);
 Token *tokenize();
 LVar *find_lvar(Token *tok);
+GVar *find_gvar(Token *tok);
 
 extern char *user_input;
 extern Token *token;
 extern LVar *locals[];
+extern GVar *globals;
 extern int funcseq; // 関数の通し番号
 
 //
@@ -78,6 +90,7 @@ typedef enum {
 	ND_ASSIGN, // =
 	ND_NUM,    // Integer
 	ND_LVAR,   // ローカル変数
+	ND_GVAR,   // グローバル変数
 	ND_RETURN, // return
 	ND_IF,     // if
 	ND_WHILE,  // while

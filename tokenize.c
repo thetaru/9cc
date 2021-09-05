@@ -7,6 +7,8 @@ Token *token;
 // ローカル変数
 LVar *locals[100];
 int funcseq = 0;
+// グローバル変数
+GVar *globals;
 
 // エラーを報告するための関数
 // printfと同じ引数を取る
@@ -181,6 +183,15 @@ Token *tokenize() {
 // 見つからなかった場合はNULLを返す
 LVar *find_lvar(Token *tok) {
 	for (LVar *var = locals[funcseq]; var; var = var->next)
+		if (var->len == tok->len && !memcmp(tok->str, var->name, var->len))
+			return var;
+	return NULL;
+}
+
+// ND_GVARトークンがグローバル変数globalsに含まれていることを確認する
+// 見つからなった場合はNULLを返す
+GVar *find_gvar(Token *tok) {
+	for (GVar *var = globals; var; var = var->next)
 		if (var->len == tok->len && !memcmp(tok->str, var->name, var->len))
 			return var;
 	return NULL;

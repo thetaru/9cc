@@ -126,7 +126,7 @@ Node *set_lvar(char *tyname) {
 	if (lvar) {
 		char *name =  calloc(1, tok->len + 1);
 		strncpy(name, tok->str, tok->len);
-		error("'%s'は定義済みの変数です。\n", name);
+		error("'%s'は定義済みのローカル変数です。\n", name);
 	}
 
 	lvar = calloc(1, sizeof(LVar));
@@ -138,7 +138,7 @@ Node *set_lvar(char *tyname) {
 	// DEBUG - START
 	char *name =  calloc(1, tok->len + 1);
 	strncpy(name, tok->str, tok->len);
-	fprintf(stderr, "DEBUG: local variable %s is defined.\n", name);
+	fprintf(stderr, "DEBUG: local variable '%s' is defined.\n", name);
 	// DEBUG - END
 
 	// 変数が利用する領域
@@ -176,7 +176,7 @@ Node *set_lvar(char *tyname) {
 	return node;
 }
 
-// (定義済み)変数を利用する
+// (定義済み)ローカル変数を利用する
 Node *use_lvar(Token *tok) {
 	Node *node = calloc(1, sizeof(Node));
 	node->kind = ND_LVAR;
@@ -200,6 +200,11 @@ Node *use_lvar(Token *tok) {
 	return node;
 }
 
+// (定義済みの)グローバル変数を利用する
+Node *use_gvar(Token *tok) {
+
+}
+
 void program() {
 	int i = 0;
 	while(!at_eof()) {
@@ -208,60 +213,116 @@ void program() {
 	code[i] = NULL;
 }
 
-// function = type ident "(" type ident* ")" "{" stmt* "}"
+// function = type ident "(" type ident* ")" "{" stmt* "}" | type indent ";"
 Node *function() {
-	funcseq++;
 	Node *node;
 
 	// type
-	if (!consume_type())
+	char *idname = consume_type();
+	if (!idname)
 		error("関数の型が未定義です。");
 
 	// ident
 	Token *tok = consume_tokenkind(TK_IDENT);
 	if (!tok)
-		error("%s is not function.\n",  tok->str);
-	node = calloc(1, sizeof(Node));
-	node->kind = ND_FUNC;
-	node->funcname = calloc(1, tok->len + 1);
-	strncpy(node->funcname, tok->str, tok->len);
-
-	// DEBUG - START
-	fprintf(stderr, "DEBUG: function %s is defined.\n", node->funcname);
-	// DEBUG - END
+		error("%s is not function or global variable.\n",  tok->str);
 
 	// ( type_1 arg_1, ... , type_n arg_n )
-	expect("(");
-	Node head;
-	head.next = NULL;
-	Node *cur = &head;
-	while (!consume(")")) {
-		// type check
-		char *tyname = consume_type();
-		if (!tyname)
-			error("引数の型が未定義です。");
+	if (consume("(")) {
+		// 関数を定義する
+		funcseq++;
 
-		// arg
-		cur->next = set_lvar(tyname);
-		cur = cur->next;
+		node = calloc(1, sizeof(Node));
+		node->kind = ND_FUNC;
+		node->funcname = calloc(1, tok->len + 1);
+		strncpy(node->funcname, tok->str, tok->len);
 
-		if (consume(")"))
-			break;
-		expect(",");
+		Node head;
+		head.next = NULL;
+		Node *cur = &head;
+		while (!consume(")")) {
+			// type check
+			char *tyname = consume_type();
+			if (!tyname)
+				error("引数の型が未定義です。\n");
+
+			// arg
+			cur->next = set_lvar(tyname);
+			cur = cur->next;
+
+			if (consume(")"))
+				break;
+			expect(",");
+		}
+		node->args = head.next;
+
+		// { ... }
+		expect("{");
+		head.next = NULL;
+		cur = &head;
+		while (!consume("}")) {
+			cur->next = stmt();
+			cur = cur->next;
+		}
+		node->body = head.next;
+
+		// DEBUG - START
+		fprintf(stderr, "DEBUG: function %s is defined.\n", node->funcname);
+		// DEBUG - END
+
+		return node;
+	} else {
+		// グローバル変数を定義する
+		node = calloc(1, sizeof(Node));
+		node->kind = ND_GVAR;
+
+		Type *type;
+		type = set_type(idname);
+		type->ptr_to = NULL;
+		type->array_size = 1;
+		while (consume("*")) {
+			Type *t;
+			t = calloc(1, sizeof(Type));
+			t->kind = TY_PTR;
+			t->ptr_to = type;
+			t->array_size = 1;
+			t->size = 8;
+			type = t;
+		}
+
+		while (consume("[")) {
+			Type *t;
+			t = calloc(1, sizeof(Type));
+			t->kind = TY_ARRAY;
+			t->ptr_to = type;
+			t->array_size = expect_number();
+			type = t;
+			expect("]");
+		}
+
+		GVar *gvar = find_gvar(tok);
+		if (gvar) {
+			char *name = calloc(1, tok->len + 1);
+			strncpy(name, tok->str, tok->len);
+			error("'%s'は定義済みのグローバル変数です。\n", name);
+		}
+
+		gvar = calloc(1, sizeof(GVar));
+		gvar->next = globals;
+		gvar->name = tok->str;
+		gvar->len = tok->len;
+		gvar->ty = type;
+
+		expect(";");
+
+		// DEBUG - START
+		char *name = calloc(1, tok->len + 1);
+		strncpy(name, tok->str, tok->len);
+		fprintf(stderr, "DEBUG: global variable '%s' is defined.\n", name);
+		// DEBUG - END
+
+		return node;
 	}
-	node->args = head.next;
-
-	// { ... }
-	expect("{");
-	head.next = NULL;
-	cur = &head;
-	while (!consume("}")) {
-		cur->next = stmt();
-		cur = cur->next;
-	}
-	node->body = head.next;
-
-	return node;
 }
 
 // assign = equality ("=" assign)?

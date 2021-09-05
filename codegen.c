@@ -10,7 +10,21 @@ void gen_lval(Node *node) {
 		return;
 	}
 	if (node->kind != ND_LVAR)
-		error("代入の左辺値が変数ではありません");
+		error("代入の左辺値が変数ではありません。\n");
+
+	printf("  mov rax, rbp\n");
+	printf("  sub rax, %d\n", node->offset);
+	printf("  push rax\n");
+}
+
+// gen_lvalをほぼコピーしただけ
+void gen_gval(Node *node) {
+	if (node->kind == ND_DEREF) {
+		gen(node->lhs);
+		return;
+	}
+	if (node->kind != ND_GVAR)
+		error("代入の左辺値が変数ではありません。\n");
 
 	printf("  mov rax, rbp\n");
 	printf("  sub rax, %d\n", node->offset);
@@ -32,6 +46,8 @@ void gen(Node *node) {
 		printf("  pop rax\n");
 		printf("  mov rax, [rax]\n");
 		printf("  push rax\n");
+		return;
+	case ND_GVAR:
 		return;
 	case ND_ADDR:
 		gen_lval(node->lhs);
