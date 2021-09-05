@@ -188,6 +188,15 @@ Node *use_lvar(Token *tok) {
 	}
 	node->offset = lvar->offset;
 	node->type = lvar->ty;
+
+	// 変数が配列の場合
+	// ident "[" expr "]"
+	// e.g. x[2] は *(x+2) を意味する
+	while (consume("[")) {
+		Node *add = new_binary(ND_ADD, node, expr());
+		node = new_binary(ND_DEREF, add, NULL);
+		expect("]");
+	}
 	return node;
 }
 
