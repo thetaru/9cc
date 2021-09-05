@@ -71,7 +71,16 @@ assert 8 "int main() { int *x; return sizeof(x); }"
 assert 4 "int main() { int *x; return sizeof(1); }"
 assert 4 "int main() { int *x; return sizeof(sizeof(1)); }"
 assert 4 "int main() { int *x; return sizeof(*x); }"
+assert 8 "int main() { int *x; return sizeof(x+1); }"
+assert 8 "int main() { int *x; return sizeof(1+x); }"
+assert 8 "int main() { int *x; int y; y = 1; return sizeof(x+y); }"
+#assert 8 "int main() { int *x; int y; y = 1; return sizeof(y+x); }"
+assert 8 "int main() { int **x; return sizeof(*x+1); }"
+assert 4 "int main() { int **x; return sizeof(**x+1); }"
 
 assert 0 "int main() { int a[5]; return 0; }"
+
+assert 3 "int main() { int a[2]; *a = 1; *(a + 1) = 2; int *p; p = a; return *p + *(p + 1); }"
+
 
 echo OK

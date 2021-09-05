@@ -1,5 +1,9 @@
 #include "9cc.h"
 
+bool is_integer(Type *type) {
+	return type->kind = TY_INT;
+}
+
 // trueのときはトークンを1つ進める
 char *consume_type() {
 	// 型名

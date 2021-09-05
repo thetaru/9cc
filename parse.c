@@ -22,6 +22,33 @@ Node *new_node_num(int val) {
 	return node;
 }
 
+// ノードから型を取得する
+Type *get_type(Node *node) {
+	if (!node)
+		return NULL;
+
+	// 型がある場合
+	if (node->type)
+		return node->type;
+
+	// 型がない場合
+	// 左辺または右辺ノードの型を再帰的に取得する
+	Type *t = get_type(node->lhs);
+	if (!t)
+		t = get_type(node->rhs);
+
+	// 左辺または右辺ノード(のどこか)に型があり、そのタイプがND_DEREFの場合
+	// 1回ポインタをたどる
+	if (t && node->kind == ND_DEREF) {
+		t = t->ptr_to;
+		if (t == NULL) {
+			error("ポインタをたどることができません。\n");
+		}
+		return t;
+	}
+	return t;
+}
+
 // 変数の型のサイズを取得する
 int get_tysize(Type *type) {
 	// 変数が利用する領域
@@ -377,23 +404,15 @@ Node *add() {
 	for (;;) {
 		if (consume("+")) {
 			Node *r = mul();
-			if (node->type && node->type->kind == TY_PTR) {
-				// DEBUG - START
-				fprintf(stderr, "DEBUG: type size is %d.\n", node->type->ptr_to->size);
-				// DEBUG - END
-
-				int size = node->type->ptr_to->size;
+			if (node->type && node->type->ptr_to) {
+				int size = get_tysize(node->type);
 				r = new_binary(ND_MUL, r, new_node_num(size));
 			}
 			node = new_binary(ND_ADD, node, r);
 		} else if (consume("-")) {
 			Node *r = mul();
-			if (node->type && node->type->kind == TY_PTR) {
-				// DEBUG - START
-				fprintf(stderr, "DEBUG: type size is %d.\n", node->type->ptr_to->size);
-				// DEBUG - END
-
-				int size = node->type->ptr_to->size;
+			if (node->type && node->type->ptr_to) {
+				int size = get_tysize(node->type);
 				r = new_binary(ND_MUL, r, new_node_num(size));
 			}
 			node = new_binary(ND_SUB, node, r);
@@ -433,16 +452,16 @@ Node *unary() {
 		return new_binary(ND_ADDR, unary(), NULL);
 	if (consume("sizeof")) {
 		Node *node = unary();
-
+		Type *type = get_type(node);
 		int size;
-		// 定数の場合(数値のみ?)
-		if (!node->type) {
-			size = 4;
-		}
 
-		// 変数の場合
-		if (node->type) {
-			size = node->type->size;
+		if (type) {
+			// 変数の場合
+			size = type->kind == TY_PTR ? 8 : get_tysize(type);
+		} else {
+			// 数値の場合
+			// e.g. sizeof(1)
+			size = 4;
 		}
 
 		return new_node_num(size);
@@ -481,3 +500,4 @@ Node *primary() {
 	// そうでなければ数値のはず
 	return new_node_num(expect_number());
 }
+

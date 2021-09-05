@@ -123,6 +123,8 @@ Node *new_node(NodeKind kind);
 Node *new_binary(NodeKind kind, Node *lhs, Node *rhs);
 Node *new_node_num(int val);
 
+Type *get_type(Node *node);
+
 void program();
 Node *function();
 Node *assign();
@@ -154,6 +156,7 @@ struct Type {
 	size_t array_size;   // 配列の要素数を意味する
 };
 
+bool is_integer(Type *type);
 char *consume_type();
 Type *set_type(char *tyname);
 
