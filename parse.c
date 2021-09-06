@@ -333,11 +333,6 @@ Node *function() {
 			var_size = type->size;
 		}
 
-		// 不要?
-		//while ((var_size % 8) != 0) {
-			//var_size += 4;
-		//}
-
 		expect(";");
 
 		// DEBUG - START

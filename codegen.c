@@ -90,6 +90,7 @@ void gen(Node *node) {
 
 		/* MEMO:
 		 *       for(;;)だと変数を定義していない場合でもrspをずらさないと失敗する。
+		 *       ccコマンドのオプションにstaticを付けるとoffsetをいじらずに済む(謎)
 		 */
 		int offset = 0;
 		if (locals[funcseq]) {

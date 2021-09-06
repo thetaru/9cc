@@ -89,5 +89,7 @@ assert 3 "int main() { int a[2]; a[0] = 1; a[1] = 2; int *p; p = a; return p[0] 
 assert 0 "int a; int b[2]; int main() { return 0; }"
 assert 0 "int a; int b[2]; int main() { int x; return 0; }"
 assert 1 "int a; int main() { a = 1; return a; }"
+assert 2 "int a; int main() { int a; a = 2; return a; }"
+assert 5 "int a; int main() { a = 2; int b; b = 3; return a + b; }"
 
 echo OK

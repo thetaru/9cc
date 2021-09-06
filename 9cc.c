@@ -22,11 +22,9 @@ int main(int argc, char *argv[]) {
 	}
 	printf(".text\n");
 
-	funcseq = 0;
 	// 先頭の式から順にコード生成
 	for (int i = 0; code[i]; i++) {
 		if (code[i]->kind == ND_FUNC) {
-			funcseq++;
 			gen(code[i]);
 		}
 	}
