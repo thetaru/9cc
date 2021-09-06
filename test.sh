@@ -16,7 +16,7 @@ assert() {
     input="$2"
 
     ./9cc "$input" > tmp.s
-    cc -o tmp tmp.s tmp2.o
+    cc -static -o tmp tmp.s tmp2.o
     ./tmp
     actual="$?"
 
@@ -29,6 +29,7 @@ assert() {
     echo ""
 }
 
+assert 1 "int a; int main() { a = 1; return a; }"
 assert 1 "int main() { return 1; }"
 
 assert 6 "int main() { int a; a = 2; int b; b = 3; return a * b; }"
@@ -87,5 +88,6 @@ assert 3 "int main() { int a[2]; a[0] = 1; a[1] = 2; int *p; p = a; return p[0] 
 
 assert 0 "int a; int b[2]; int main() { return 0; }"
 assert 0 "int a; int b[2]; int main() { int x; return 0; }"
+assert 1 "int a; int main() { a = 1; return a; }"
 
 echo OK

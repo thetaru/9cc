@@ -4,31 +4,21 @@
 int labelseq = 1;
 char *argreg[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
 
-void gen_lval(Node *node) {
+void gen_val(Node *node) {
 	if (node->kind == ND_DEREF) {
 		gen(node->lhs);
 		return;
 	}
-	if (node->kind != ND_LVAR)
-		error("代入の左辺値が変数ではありません。\n");
 
-	printf("  mov rax, rbp\n");
-	printf("  sub rax, %d\n", node->offset);
-	printf("  push rax\n");
-}
-
-// gen_lvalをほぼコピーしただけ
-void gen_gval(Node *node) {
-	if (node->kind == ND_DEREF) {
-		gen(node->lhs);
-		return;
+	if (node->kind == ND_LVAR) {
+		printf("  mov rax, rbp\n");
+		printf("  sub rax, %d\n", node->offset);
+		printf("  push rax\n");
+	} else if (node->kind == ND_GVAR) {
+		printf("  push offset %s\n", node->varname);
+	} else {
+		error("変数ではありません。\n");
 	}
-	if (node->kind != ND_GVAR)
-		error("代入の左辺値が変数ではありません。\n");
-
-	printf("  mov rax, rbp\n");
-	printf("  sub rax, %d\n", node->offset);
-	printf("  push rax\n");
 }
 
 void gen(Node *node) {
@@ -36,8 +26,8 @@ void gen(Node *node) {
 	case ND_NUM:
 		printf("  push %d\n", node->val);
 		return;
-	case ND_LVAR:
-		gen_lval(node);
+	case ND_LVAR: {
+		gen_val(node);
 
 		Type *t = get_type(node);
 		if (t && t->kind == TY_ARRAY)
@@ -47,10 +37,25 @@ void gen(Node *node) {
 		printf("  mov rax, [rax]\n");
 		printf("  push rax\n");
 		return;
-	case ND_GVAR:
+	}
+	case ND_GVAR_DEF:
+		printf("%s:\n", node->varname);
+		printf("  .zero %d\n", node->varsize);
 		return;
+	case ND_GVAR: {
+		gen_val(node);
+
+		Type *t = get_type(node);
+		if (t && t->kind == TY_ARRAY)
+			return;
+
+		printf("  pop rax\n");
+		printf("  mov rax, [rax]\n");
+		printf("  push rax\n");
+		return;
+	}
 	case ND_ADDR:
-		gen_lval(node->lhs);
+		gen_val(node->lhs);
 		return;
 	case ND_DEREF:
 		gen(node->lhs);
@@ -59,7 +64,7 @@ void gen(Node *node) {
 		printf("  push rax\n");
 		return;
 	case ND_ASSIGN:
-		gen_lval(node->lhs);
+		gen_val(node->lhs);
 		gen(node->rhs);
 		printf("  pop rdi\n");
 		printf("  pop rax\n");
@@ -69,6 +74,7 @@ void gen(Node *node) {
 	case ND_FUNC: { // 関数の定義
 		int nargs = 0;
 
+		printf(".global %s\n", node->funcname);
 		printf("%s:\n", node->funcname);
 
 		// プロローグ
@@ -85,7 +91,7 @@ void gen(Node *node) {
 		/* MEMO:
 		 *       for(;;)だと変数を定義していない場合でもrspをずらさないと失敗する。
 		 */
-		int offset = 16;
+		int offset = 0;
 		if (locals[funcseq]) {
 			offset = locals[funcseq]->offset;
 			offset -= nargs * 8;

@@ -172,22 +172,36 @@ Node *set_lvar(char *tyname) {
 	}
 	node->offset = lvar->offset;
 	node->type = lvar->ty;
+	node->varsize = var_size;
 	locals[funcseq] = lvar;
 	return node;
 }
 
-// (定義済み)ローカル変数を利用する
-Node *use_lvar(Token *tok) {
+// (定義済み)変数を利用する
+Node *use_var(Token *tok) {
 	Node *node = calloc(1, sizeof(Node));
-	node->kind = ND_LVAR;
+	node->varname = calloc(1, tok->len + 1);
+	memcpy(node->varname, tok->str, tok->len);
+
+	GVar *gvar = find_gvar(tok);
 	LVar *lvar = find_lvar(tok);
-	if (!lvar) {
-		char *name =  calloc(1, tok->len + 1);
-		strncpy(name, tok->str, tok->len);
-		error("'%s'は未定義の変数です。\n", name);
+	if (gvar || lvar) {
+		// ローカル変数・グローバル変数のどちらかが定義されている場合
+		// どちらも定義されている場合はローカル変数を優先する
+		node->kind = lvar ? ND_LVAR : ND_GVAR;
+	} else {
+		// どちらも定義されていない場合
+		error("'%s'は未定義の変数です。\n", node->varname);
 	}
-	node->offset = lvar->offset;
-	node->type = lvar->ty;
+
+	if (node->kind == ND_LVAR) {
+		// ローカル変数のメンバの値を設定する
+		node->offset = lvar->offset;
+		node->type = lvar->ty;
+	} else if (node->kind == ND_GVAR) {
+		// グローバル変数のメンバの値を設定する
+		node->type = gvar->ty;
+	}
 
 	// 変数が配列の場合
 	// ident "[" expr "]"
@@ -198,11 +212,6 @@ Node *use_lvar(Token *tok) {
 		expect("]");
 	}
 	return node;
-}
-
-// (定義済みの)グローバル変数を利用する
-Node *use_gvar(Token *tok) {
-
 }
 
 void program() {
@@ -274,7 +283,7 @@ Node *function() {
 	} else {
 		// グローバル変数を定義する
 		node = calloc(1, sizeof(Node));
-		node->kind = ND_GVAR;
+		node->kind = ND_GVAR_DEF;
 
 		Type *type;
 		type = set_type(idname);
@@ -313,6 +322,22 @@ Node *function() {
 		gvar->len = tok->len;
 		gvar->ty = type;
 
+		int var_size;
+		if (type->kind == TY_ARRAY) {
+			var_size = get_tysize(type);
+			while (type->ptr_to) {
+				var_size *= type->array_size;
+				type = type->ptr_to;
+			}
+		} else {
+			var_size = type->size;
+		}
+
+		// 不要?
+		//while ((var_size % 8) != 0) {
+			//var_size += 4;
+		//}
+
 		expect(";");
 
 		// DEBUG - START
@@ -321,6 +346,11 @@ Node *function() {
 		fprintf(stderr, "DEBUG: global variable '%s' is defined.\n", name);
 		// DEBUG - END
 
+		node->type = gvar->ty;
+		node->varname = calloc(1, tok->len + 1);
+		strncpy(node->varname, tok->str, tok->len);
+		node->varsize = var_size;
+		globals = gvar;
 		return node;
 	}
 }
@@ -564,7 +594,7 @@ Node *primary() {
 		}
 
 		// (定義済みの)変数の場合
-		return use_lvar(tok);
+		return use_var(tok);
 	}
 
 	// そうでなければ数値のはず

@@ -91,6 +91,7 @@ typedef enum {
 	ND_NUM,    // Integer
 	ND_LVAR,   // ローカル変数
 	ND_GVAR,   // グローバル変数
+	ND_GVAR_DEF,   // グローバル変数の定義
 	ND_RETURN, // return
 	ND_IF,     // if
 	ND_WHILE,  // while
@@ -129,7 +130,9 @@ struct Node {
 
 	int val;       // kindがND_NUMの場合のみ使う
 	int offset;    // kindがND_LVARの場合のみ使う
-	Type *type;    // kindがND_LVARの場合のみ使う
+	Type *type;    // kindがND_(L|G)VARの場合のみ使う
+	char *varname; // kindがND_(L|G)VARの場合のみ使う 変数名を意味する
+	int varsize;   // kindがND_(L|G)VARの場合のみ使う
 };
 
 Node *new_node(NodeKind kind);
@@ -177,5 +180,5 @@ Type *set_type(char *tyname);
 // codegen.c
 //
 
-void gen_lval(Node *node);
+void gen_val(Node *node);
 void gen(Node *node);

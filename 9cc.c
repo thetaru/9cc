@@ -14,13 +14,21 @@ int main(int argc, char *argv[]) {
 
 	// アセンブリの前眼部分を出力
 	printf(".intel_syntax noprefix\n");
-	printf(".global main\n");
-
-	// 先頭の式から順にコード生成
-	funcseq = 0;
+	printf(".bss\n");
 	for (int i = 0; code[i]; i++) {
-		funcseq++;
-		gen(code[i]);
+		if (code[i]->kind == ND_GVAR_DEF) {
+			gen(code[i]);
+		}
+	}
+	printf(".text\n");
+
+	funcseq = 0;
+	// 先頭の式から順にコード生成
+	for (int i = 0; code[i]; i++) {
+		if (code[i]->kind == ND_FUNC) {
+			funcseq++;
+			gen(code[i]);
+		}
 	}
 
 	return 0;
