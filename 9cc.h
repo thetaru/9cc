@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 typedef struct Type Type;
 typedef struct Node Node;
@@ -62,7 +63,7 @@ struct String {
 };
 
 void error(char *fmt, ...);
-void error_at(char *loc, char *fmt, ...);
+void error_at(char *loc, char *msg);
 bool consume(char *op);
 Token *consume_tokenkind(TokenKind kind);
 void expect(char *op);

@@ -99,4 +99,10 @@ assert 0 'int main() { char *a; a = "abc"; return 0; }'
 assert 0 'int main() { char *a; a = "abcdefghijklmnopqrstuvwxyz"; return 0; }'
 assert 97 'int main() { char *a; a = "a"; printf(a); return a[0]; }'
 
+assert 0 "int main() { /* NekoCat InuDog */ return 0; }"
+assert 0 "int main() {
+  // SaruMonkey ToriBird
+  return 0;
+}"
+
 echo OK
