@@ -7,7 +7,7 @@ bool is_integer(Type *type) {
 // trueのときはトークンを1つ進める
 char *consume_type() {
 	// 型名
-	static char *keywords[] = {"int"};
+	static char *keywords[] = {"int", "char"};
 	char *name = token->str;
 	if (token->kind == TK_RESERVED)
 		for (int i = 0; i < sizeof(keywords) / sizeof(*keywords); i++) {
@@ -30,6 +30,12 @@ Type *set_type(char *tyname) {
 	if (startswith(tyname, "int")) {
 		type->kind = TY_INT;
 		type->size = 4;
+	}
+
+	// char型を設定
+	if (startswith(tyname, "char")) {
+		type->kind = TY_CHAR;
+		type->size = 1;
 	}
 
 	// 型を追加するたびに追記する...

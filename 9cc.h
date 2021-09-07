@@ -161,6 +161,7 @@ extern Node *code[100];
 
 typedef enum {
 	TY_INT,        // int型
+	TY_CHAR,       // char型
 	TY_PTR,        // ポインタ型
 	TY_ARRAY,      // 配列型
 } TypeKind;

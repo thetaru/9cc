@@ -92,4 +92,7 @@ assert 1 "int a; int main() { a = 1; return a; }"
 assert 2 "int a; int main() { int a; a = 2; return a; }"
 assert 5 "int a; int main() { a = 2; int b; b = 3; return a + b; }"
 
+assert 1 "int main() { char a; return sizeof(a); }"
+assert 3 "int main() { char x[3]; x[0] = -1; x[1] = 2; int y; y = 4; return x[0] + y; }"
+
 echo OK

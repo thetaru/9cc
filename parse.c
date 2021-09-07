@@ -157,8 +157,9 @@ Node *set_lvar(char *tyname) {
 	}
 
 	// offsetは8の倍数でないといけないらしい...？
+	// char型(1byte)が追加されたので+4から+1に修正
 	while ((var_size % 8) != 0) {
-		var_size += 4;
+		var_size += 1;
 	}
 
 	// DEBUG - START
