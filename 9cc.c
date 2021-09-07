@@ -8,9 +8,8 @@ int main(int argc, char *argv[]) {
 
 	// トークナイズしてパースする
 	// 結果はcodeに保存する
-	//filename = argv[1];
-	//user_input = read_file(filename);
-	user_input = argv[1];
+	filename = argv[1];
+	user_input = read_file(filename);
 	token = tokenize();
 	program();
 
