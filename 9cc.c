@@ -8,6 +8,8 @@ int main(int argc, char *argv[]) {
 
 	// トークナイズしてパースする
 	// 結果はcodeに保存する
+	//filename = argv[1];
+	//user_input = read_file(filename);
 	user_input = argv[1];
 	token = tokenize();
 	program();
@@ -23,6 +25,7 @@ int main(int argc, char *argv[]) {
 
 	printf(".data\n");
 	for (String *str = strings; str; str = str->next) {
+		strseq++;
 		printf(".LC_%d:\n", strseq);
 		printf("  .string \"%s\"\n", str->val);
 	}

@@ -62,8 +62,9 @@ struct String {
 	char *val;    // 文字列
 };
 
+char *read_file(char *path);
 void error(char *fmt, ...);
-void error_at(char *loc, char *msg);
+void error_at(char *loc, char *fmt, ...);
 bool consume(char *op);
 Token *consume_tokenkind(TokenKind kind);
 void expect(char *op);
@@ -79,6 +80,7 @@ LVar *find_lvar(Token *tok);
 GVar *find_gvar(Token *tok);
 
 extern char *user_input;
+extern char *filename;
 extern Token *token;
 extern LVar *locals[];
 extern GVar *globals;
@@ -169,7 +171,7 @@ Node *mul();
 Node *unary();
 Node *primary();
 
-extern Node *code[100];
+extern Node *code[5000];
 
 //
 // type.c

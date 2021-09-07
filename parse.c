@@ -1,7 +1,7 @@
 #include "9cc.h"
 #include <stdio.h>
 
-Node *code[100];
+Node *code[5000];
 
 Node *new_node(NodeKind kind) {
 	Node *node = calloc(1, sizeof(Node));
