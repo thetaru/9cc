@@ -57,7 +57,7 @@ struct GVar {
 typedef struct String String;
 
 struct String {
-	String *next; // 次の文字列かNULL?
+	String *next; // 次の文字列
 	char *val;    // 文字列
 };
 
@@ -76,7 +76,6 @@ bool startswith(char *p, char *q);
 Token *tokenize();
 LVar *find_lvar(Token *tok);
 GVar *find_gvar(Token *tok);
-String *find_str(Token *tok);
 
 extern char *user_input;
 extern Token *token;

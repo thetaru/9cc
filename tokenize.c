@@ -216,6 +216,3 @@ GVar *find_gvar(Token *tok) {
 	return NULL;
 }
 
-String *find_string(Token *tok) {
-	return NULL;
-}
