@@ -26,6 +26,8 @@ void gen(Node *node) {
 	case ND_NUM:
 		printf("  push %d\n", node->val);
 		return;
+	case ND_STR:
+		return;
 	case ND_LVAR: {
 		gen_val(node);
 

@@ -172,6 +172,22 @@ Token *tokenize() {
 			continue;
 		}
 
+		// 文字列であることを確認する
+		if ('"' == *p) {
+			char *q = ++p;
+
+			// 文字列チェック
+			for (; *p != '"'; p++) {
+				if (*p == '\n' || *p == '\0')
+					error("文字列が閉じていません。\n");
+			}
+
+			// 文字列の抜き出し
+			cur = new_token(TK_STR, cur, q, p - q);
+			p += 1;
+			continue;
+		}
+
 		error_at(p, "トークナイズできません");
 	}
 

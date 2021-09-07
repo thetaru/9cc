@@ -17,6 +17,7 @@ typedef enum {
 	TK_RESERVED, // 記号
 	TK_IDENT,    // 識別子
 	TK_NUM,      // 整数トークン
+	TK_STR,      // 文字列
 	TK_EOF,      // 入力の終わりを表すトークン
 } TokenKind;
 
@@ -27,6 +28,7 @@ struct Token {
 	TokenKind kind; // トークンの型
 	Token *next;    // 次の入力トークン
 	int val;        // kindがTK_NUMの場合、その数値
+	Type *type;     // kindがTK_STRの場合のみ使う
 	char *str;      // トークン文字列
 	int len;        // トークンの長さ
 };
@@ -89,6 +91,7 @@ typedef enum {
 	ND_LE,     // <=
 	ND_ASSIGN, // =
 	ND_NUM,    // Integer
+	ND_STR,    // String
 	ND_LVAR,   // ローカル変数
 	ND_GVAR,   // グローバル変数
 	ND_GVAR_DEF,   // グローバル変数の定義
@@ -129,6 +132,7 @@ struct Node {
 	Node *args;     // 引数
 
 	int val;       // kindがND_NUMの場合のみ使う
+	char *str;       // kindがND_STRの場合のみ使う
 	int offset;    // kindがND_LVARの場合のみ使う
 	Type *type;    // kindがND_(L|G)VARの場合のみ使う
 	char *varname; // kindがND_(L|G)VARの場合のみ使う 変数名を意味する

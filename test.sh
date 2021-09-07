@@ -95,4 +95,7 @@ assert 5 "int a; int main() { a = 2; int b; b = 3; return a + b; }"
 assert 1 "int main() { char a; return sizeof(a); }"
 assert 3 "int main() { char x[3]; x[0] = -1; x[1] = 2; int y; y = 4; return x[0] + y; }"
 
+assert 0 'int main() { char *a; a = "abc"; return 0; }'
+assert 0 'int main() { char *a; a = "abcdefghijklmnopqrstuvwxyz"; return 0; }'
+
 echo OK

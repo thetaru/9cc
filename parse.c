@@ -565,7 +565,7 @@ Node *unary() {
 	return primary();
 }
 
-// primary = num | ident ("(" expr* ")")? | "(" expr ")"
+// primary = num | str | ident ("(" expr* ")")? | "(" expr ")"
 Node *primary() {
 	// 次のトークンが"("なら、"(" expr ")"のはず
 	if (consume("(")) {
@@ -591,6 +591,16 @@ Node *primary() {
 
 		// (定義済みの)変数の場合
 		return use_var(tok);
+	}
+
+	// 文字列
+	tok = consume_tokenkind(TK_STR);
+	if (tok) {
+		Node *node = calloc(1, sizeof(Node));
+		node->kind = ND_STR;
+		node->str = calloc(1, tok->len + 1);
+		strncpy(node->str, tok->str, tok->len);
+		return node;
 	}
 
 	// そうでなければ数値のはず
