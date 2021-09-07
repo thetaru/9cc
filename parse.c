@@ -22,6 +22,12 @@ Node *new_node_num(int val) {
 	return node;
 }
 
+Node *new_node_str(String *str) {
+	Node *node = new_node(ND_STR);
+	node->string = str;
+	return node;
+}
+
 // ノードから型を取得する
 Type *get_type(Node *node) {
 	if (!node)
@@ -596,11 +602,13 @@ Node *primary() {
 	// 文字列
 	tok = consume_tokenkind(TK_STR);
 	if (tok) {
-		Node *node = calloc(1, sizeof(Node));
-		node->kind = ND_STR;
-		node->str = calloc(1, tok->len + 1);
-		strncpy(node->str, tok->str, tok->len);
-		return node;
+		strseq++;
+		String *str = calloc(1, sizeof(String));
+		str->val = calloc(1, tok->len + 1);
+		strncpy(str->val, tok->str, tok->len);
+		str->next = strings;
+		strings = str;
+		return new_node_str(str);
 	}
 
 	// そうでなければ数値のはず

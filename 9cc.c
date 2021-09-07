@@ -20,6 +20,13 @@ int main(int argc, char *argv[]) {
 			gen(code[i]);
 		}
 	}
+
+	printf(".data\n");
+	for (String *str = strings; str; str = str->next) {
+		printf(".LC_%d:\n", strseq);
+		printf("  .string \"%s\"\n", str->val);
+	}
+
 	printf(".text\n");
 
 	// 先頭の式から順にコード生成

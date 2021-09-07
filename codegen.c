@@ -27,6 +27,7 @@ void gen(Node *node) {
 		printf("  push %d\n", node->val);
 		return;
 	case ND_STR:
+		printf("  push offset .LC_%d\n", strseq);
 		return;
 	case ND_LVAR: {
 		gen_val(node);

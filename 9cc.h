@@ -54,6 +54,13 @@ struct GVar {
 	int pos;    // メモリ位置
 };
 
+typedef struct String String;
+
+struct String {
+	String *next; // 次の文字列かNULL?
+	char *val;    // 文字列
+};
+
 void error(char *fmt, ...);
 void error_at(char *loc, char *fmt, ...);
 bool consume(char *op);
@@ -69,12 +76,15 @@ bool startswith(char *p, char *q);
 Token *tokenize();
 LVar *find_lvar(Token *tok);
 GVar *find_gvar(Token *tok);
+String *find_str(Token *tok);
 
 extern char *user_input;
 extern Token *token;
 extern LVar *locals[];
 extern GVar *globals;
+extern String *strings;
 extern int funcseq; // 関数の通し番号
+extern int strseq;  // 文字列の通し番号
 
 //
 // parse.c
@@ -132,7 +142,9 @@ struct Node {
 	Node *args;     // 引数
 
 	int val;       // kindがND_NUMの場合のみ使う
-	char *str;       // kindがND_STRの場合のみ使う
+
+	String *string;     // kindがND_STRの場合のみ使う
+
 	int offset;    // kindがND_LVARの場合のみ使う
 	Type *type;    // kindがND_(L|G)VARの場合のみ使う
 	char *varname; // kindがND_(L|G)VARの場合のみ使う 変数名を意味する

@@ -7,8 +7,11 @@ Token *token;
 // ローカル変数
 LVar *locals[100];
 int funcseq = 0;
+int strseq = 0;
 // グローバル変数
 GVar *globals;
+// 文字列
+String *strings;
 
 // エラーを報告するための関数
 // printfと同じ引数を取る
@@ -210,5 +213,9 @@ GVar *find_gvar(Token *tok) {
 	for (GVar *var = globals; var; var = var->next)
 		if (var->len == tok->len && !memcmp(tok->str, var->name, var->len))
 			return var;
+	return NULL;
+}
+
+String *find_string(Token *tok) {
 	return NULL;
 }
